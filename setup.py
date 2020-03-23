@@ -35,5 +35,10 @@ setup(
 
     packages=find_packages('scriic'),
     python_requires='>=3.6,<4',
-    setup_requires=['setuptools_scm']
+    setup_requires=['setuptools_scm'],
+    extras_require={
+        'tests': [
+            'pytest >=5,<6'
+        ]
+    }
 )
