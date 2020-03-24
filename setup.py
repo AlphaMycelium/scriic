@@ -33,7 +33,7 @@ setup(
         'Source': 'https://github.com/AlphaMycelium/scriic',
     },
 
-    packages=find_packages('scriic'),
+    packages=find_packages(exclude=['docs', 'tests']),
     python_requires='>=3.6,<4',
     setup_requires=['setuptools_scm'],
     install_requires=['fire <1'],
