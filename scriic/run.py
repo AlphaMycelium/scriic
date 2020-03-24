@@ -1,6 +1,8 @@
 import os.path
 import re
 
+from .substitute import substitute_variables
+
 
 SUPPORTED_TYPES = [
     'str',
@@ -16,6 +18,9 @@ class MetadataException(Exception):
     pass
 
 class ScriicSyntaxException(Exception):
+    pass
+
+class MissingParamException(Exception):
     pass
 
 
@@ -82,7 +87,9 @@ class FileRunner:
 
                 else:
                     if len(line) > 0:
-                        break  # This line must be a code statement
+                        # This line must be a code statement
+                        line_no -= 1
+                        break
 
         if not self.howto:
             raise MetadataException(f'{self.file_path} does not begin with HOWTO')
@@ -106,4 +113,47 @@ class FileRunner:
             # We will update the type once we reach a WHERE later
             self.params[param_name] = None
 
-    
+    def run(self, params=None):
+        """
+        Run the code and return generated steps.
+
+        :param params: Dictionary of parameters to pass to the script
+        :returns: List of steps as strings
+        """
+        if params:
+            self.variables = params.copy()
+        else:
+            self.variables = dict()
+        self.steps = list()
+
+        # Check that all parameters have been set
+        for param in self.params:
+            if not param in self.variables:
+                raise MissingParamException(
+                    f'{self.file_path} is missing parameter {param}')
+
+        # Run the script
+        with open(self.file_path) as file:
+            for line_no, line in enumerate(file):
+                self._run_line(line, line_no)
+
+        return self.steps
+
+    def _run_line(self, line, line_no):
+        """
+        Run one line of code.
+
+        :param line: Text of this line
+        :param line_no: Position of this line in the file
+        """
+        if line_no < self.code_begins_at:
+            return  # Skip metadata
+
+        line = line.strip()
+        if len(line) == 0:
+            return  # This is a blank line, skip it
+
+        if line.startswith('DO '):
+            step = substitute_variables(line[3:], self.variables)
+            self.steps.append(step)
+            return

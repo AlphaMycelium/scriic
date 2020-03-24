@@ -90,3 +90,33 @@ class TestMetadata:
 
         with pytest.raises(ScriicSyntaxException):
             runner = FileRunner(tmp_file.absolute())
+
+
+class TestRun:
+    def test_do(self, tmp_path):
+        tmp_file = tmp_path / 'test.scriic'
+        tmp_file.write_text("""
+            HOWTO Test scriic
+            DO Test scriic!
+            DO Test scriic again!
+        """.strip())
+
+        runner = FileRunner(tmp_file.absolute())
+        steps = runner.run()
+
+        assert len(steps) == 2
+        assert steps[0] == 'Test scriic!'
+        assert steps[1] == 'Test scriic again!'
+
+    def test_do_substitution(self, tmp_path):
+        tmp_file = tmp_path / 'test.scriic'
+        tmp_file.write_text("""
+            HOWTO Test <var>
+            WHERE var IS str
+            DO Test [var]!
+        """.strip())
+
+        runner = FileRunner(tmp_file.absolute())
+        steps = runner.run({'var': 'scriic'})
+
+        assert steps[0] == 'Test scriic!'
