@@ -68,4 +68,11 @@ The same variable substitution rules as `DO` apply to the text after `WITH`:
 SUB ./add_filling_to_sandwich.scriic
 WITH [filling] AS filling
 WITH the slice of bread which was placed onto [surface] AS bread
+GO
 ```
+
+## GO
+
+This commits the parameters you have specified using `WITH` and launches the
+subscriic. If the subscriic takes no parameters, `GO` will be implicitly called
+and you should not include it.

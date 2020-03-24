@@ -79,6 +79,7 @@ class FileRunner:
         :returns: List of steps as strings
         """
         self.steps = list()
+        self.sub_runner = None
         if params:
             self.variables = params.copy()
         else:
@@ -94,6 +95,10 @@ class FileRunner:
         with open(self.file_path) as file:
             for line_no, line in enumerate(file):
                 self._run_line(line, line_no)
+
+        # Check for unfinished SUBs
+        if self.sub_runner is not None:
+            raise ScriicSyntaxException('Unfinished SUB')
 
         return self.steps
 
@@ -114,7 +119,6 @@ class FileRunner:
         if line.startswith('DO '):
             step = substitute_variables(line[3:], self.variables)
             self.steps.append(step)
-            return
 
         elif line.startswith('SET '):
             match = re.match(r'SET (.+) DOING (.+)', line)
@@ -126,6 +130,37 @@ class FileRunner:
             # Set the variable to textually reference this step
             result_ref = f'the result of step {len(self.steps)}'
             self.variables[match.group(1)] = result_ref
+
+        elif line.startswith('SUB '):
+            sub_path = os.path.join(self.dir_path, line[4:])
+            self.sub_runner = FileRunner(sub_path)
+
+            if len(self.sub_runner.params) == 0:
+                # This subscriic takes no parameters, run it now
+                steps = self.sub_runner.run()
+                self.steps.extend(steps)
+
+                self.sub_runner = None
+            else:
+                self.sub_params = dict()
+
+        elif line.startswith('WITH '):
+            match = re.match(r'WITH (.+) AS (.+)', line)
+            if not match:
+                raise ScriicSyntaxException(line)
+
+            param = substitute_variables(match.group(1), self.variables)
+            self.sub_params[match.group(2)] = param
+
+        elif line == 'GO':
+            if self.sub_runner is None:
+                raise ScriicSyntaxException('Unexpected GO')
+
+            steps = self.sub_runner.run(self.sub_params)
+            self.steps.extend(steps)
+
+            self.sub_runner = None
+            del self.sub_params
 
         else:
             raise ScriicSyntaxException(line)
