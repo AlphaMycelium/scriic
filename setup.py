@@ -39,7 +39,8 @@ setup(
     install_requires=['fire <1'],
     extras_require={
         'tests': [
-            'pytest >=5,<6'
+            'pytest >=5,<6',
+            'pytest-cov >=2,<3'
         ]
     },
 
