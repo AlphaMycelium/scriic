@@ -23,7 +23,7 @@ jobs:
     - name: Test
       uses: paambaati/codeclimate-action@v2.5.5
       env:
-        CC_TEST_REPORTER_ID: ${{ secrets.CC_TEST_REPORTER_ID }}
+        CC_TEST_REPORTER_ID: 2c68b7b59c2ccb59bdaf80fc4d155ebdacbbeb32987c3fd751b64895a338f9c7
       with:
         coverageCommand: |
           pytest -v --doctest-modules --cov=scriic --cov-report=xml
