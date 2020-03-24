@@ -21,7 +21,7 @@ def substitute_variables(string, values):
     def substitute(match):
         variable_name = match.group(1)
         try:
-            return values[variable_name]
+            return str(values[variable_name])
         except KeyError:
             # This is an non-existant variable
             raise SubstitutionError(f'Variable {variable_name} does not exist')

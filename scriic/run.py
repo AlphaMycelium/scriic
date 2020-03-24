@@ -2,6 +2,7 @@ import os.path
 import re
 
 from .substitute import substitute_variables
+from .unknown import UnknownValue
 
 
 class ScriicSyntaxException(Exception):
@@ -127,9 +128,9 @@ class FileRunner:
 
             # Create a step and get its index
             self.steps.append(match.group(2))
-            # Set the variable to textually reference this step
-            result_ref = f'the result of step {len(self.steps)}'
-            self.variables[match.group(1)] = result_ref
+            step_index = len(self.steps) - 1
+            # Set the variable to reference the result of this step
+            self.variables[match.group(1)] = UnknownValue(step_index)
 
         elif line.startswith('SUB '):
             sub_path = os.path.join(self.dir_path, line[4:])
