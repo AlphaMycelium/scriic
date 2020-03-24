@@ -21,6 +21,14 @@ class FileRunner:
         self.file_path = file_path
         self.dir_path = os.path.dirname(file_path)
 
+        self.commands = {
+            'DO': self._do,
+            'SET': self._set_doing,
+            'SUB': self._sub,
+            'WITH': self._with_as,
+            'GO': self._go
+        }
+
         self.code_begins_at = self._get_meta() + 1
 
     def _get_meta(self):
@@ -107,51 +115,64 @@ class FileRunner:
         if len(line) == 0:
             return  # This is a blank line, skip it
 
-        if line.startswith('DO '):
-            step = substitute_variables(line[3:], self.variables)
-            self.steps.append(step)
+        # Find a command which matches this line
+        for command in self.commands:
+            if line.startswith(command):
+                # Run the command
+                self.commands[command](line)
+                return
 
-        elif line.startswith('SET '):
-            match = re.match(r'SET (.+) DOING (.+)', line)
-            if not match:
-                raise ScriicSyntaxException(line)
+        # Unknown command
+        raise ScriicSyntaxException(line)
 
-            # Create a step and get its index
-            self.steps.append(match.group(2))
-            step_index = len(self.steps) - 1
-            # Set the variable to reference the result of this step
-            self.variables[match.group(1)] = UnknownValue(step_index)
+    # COMMANDS BEGIN HERE #
+    def _do(self, line):
+        step = substitute_variables(line[3:], self.variables)
+        self.steps.append(step)
 
-        elif line.startswith('SUB '):
-            sub_path = os.path.join(self.dir_path, line[4:])
-            self.sub_runner = FileRunner(sub_path)
+    def _set_doing(self, line):
+        match = re.match(r'SET (.+) DOING (.+)', line)
+        if not match:
+            raise ScriicSyntaxException(line)
 
-            if len(self.sub_runner.params) == 0:
-                # This subscriic takes no parameters, run it now
-                steps = self.sub_runner.run()
-                self.steps.extend(steps)
+        # Create a step and get its index
+        self.steps.append(match.group(2))
+        step_index = len(self.steps) - 1
 
-                self.sub_runner = None
-            else:
-                self.sub_params = dict()
+        # Set the variable to reference the result of this step
+        self.variables[match.group(1)] = UnknownValue(step_index)
 
-        elif line.startswith('WITH '):
-            match = re.match(r'WITH (.+) AS (.+)', line)
-            if not match:
-                raise ScriicSyntaxException(line)
+    def _sub(self, line):
+        # Create a runner for the subscriic
+        sub_path = os.path.join(self.dir_path, line[4:])
+        self.sub_runner = FileRunner(sub_path)
 
-            param = substitute_variables(match.group(1), self.variables)
-            self.sub_params[match.group(2)] = param
-
-        elif line == 'GO':
-            if self.sub_runner is None:
-                raise ScriicSyntaxException('Unexpected GO')
-
-            steps = self.sub_runner.run(self.sub_params)
+        if len(self.sub_runner.params) == 0:
+            # This subscriic takes no parameters, run it now
+            steps = self.sub_runner.run()
             self.steps.extend(steps)
 
             self.sub_runner = None
-            del self.sub_params
-
         else:
+            # Parameters need to be given using WITH AS
+            self.sub_params = dict()
+
+    def _with_as(self, line):
+        match = re.match(r'WITH (.+) AS (.+)', line)
+        if not match:
             raise ScriicSyntaxException(line)
+
+        param = substitute_variables(match.group(1), self.variables)
+        self.sub_params[match.group(2)] = param
+
+    def _go(self, line):
+        if self.sub_runner is None:
+            raise ScriicSyntaxException('Unexpected GO')
+
+        # Run the subscriic and get steps
+        steps = self.sub_runner.run(self.sub_params)
+        self.steps.extend(steps)
+
+        # Remove the subscriic runner now we have finished with it
+        self.sub_runner = None
+        del self.sub_params
