@@ -36,9 +36,16 @@ setup(
     packages=find_packages('scriic'),
     python_requires='>=3.6,<4',
     setup_requires=['setuptools_scm'],
+    install_requires=['fire <1'],
     extras_require={
         'tests': [
             'pytest >=5,<6'
+        ]
+    },
+
+    entry_points={
+        'console_scripts': [
+            'scriic=scriic:main'
         ]
     }
 )
