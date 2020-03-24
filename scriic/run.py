@@ -157,3 +157,14 @@ class FileRunner:
             step = substitute_variables(line[3:], self.variables)
             self.steps.append(step)
             return
+
+        elif line.startswith('SET '):
+            match = re.match(r'SET (.+) DOING (.+)', line)
+            if not match:
+                raise ScriicSyntaxException(line)
+
+            # Create a step and get its index
+            self.steps.append(match.group(2))
+            # Set the variable to textually reference this step
+            result_ref = f'the result of step {len(self.steps)}'
+            self.variables[match.group(1)] = result_ref
