@@ -1,3 +1,6 @@
 # Scriic
 
-Generate step-by-step instructions using code
+Documentation is on the [GitHub Wiki page][wiki].
+
+
+[wiki]: https://github.com/AlphaMycelium/scriic/wiki

@@ -12,7 +12,7 @@ setup(
     name='scriic',
     use_scm_version=True,
 
-    description='Generate step-by-step instructions using code',
+    description='Generate overcomplicated instructions using a mini-language',
     long_description=long_description,
     long_description_content_type='text/markdown',
     author='Daniel Thwaites',
