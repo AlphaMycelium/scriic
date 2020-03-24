@@ -26,7 +26,7 @@ class TestMetadata:
         """.strip())
 
         with pytest.raises(MissingMetadataException):
-            runner = FileRunner(tmp_file.absolute())
+            FileRunner(tmp_file.absolute())
 
     def test_multi_howto(self, tmp_path):
         tmp_file = tmp_path / 'test.scriic'
@@ -36,7 +36,7 @@ class TestMetadata:
         """.strip())
 
         with pytest.raises(InvalidMetadataException):
-            runner = FileRunner(tmp_file.absolute())
+            FileRunner(tmp_file.absolute())
 
 
 class TestRun:
@@ -93,7 +93,8 @@ class TestRun:
         assert steps[0] == 'Get some value'
         assert steps[1] == 'Read the result of step 1'
 
-class TestSub():
+
+class TestSub:
     def test_sub_simple(self, tmp_path):
         tmp_file_1 = tmp_path / 'test1.scriic'
         tmp_file_1.write_text("""

@@ -78,7 +78,7 @@ class FileRunner:
 
         # Check that all parameters have been set
         for param in self.params:
-            if not param in self.variables:
+            if param not in self.variables:
                 raise MissingParamException(
                     f'{self.file_path} is missing parameter {param}')
 

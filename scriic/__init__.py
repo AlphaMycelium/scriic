@@ -25,6 +25,7 @@ def run(file):
     for i, step in enumerate(steps):
         print(f'{i+1}. {step}')
 
+
 # This is used as an entrypoint in setup.py
 def main():
     fire.Fire(run)
