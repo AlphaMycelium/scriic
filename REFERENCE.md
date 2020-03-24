@@ -17,35 +17,6 @@ HOWTO Make a <filling> sandwich on <surface>
 Notice how we take care to be extra-specific with where the sandwich will be
 made.
 
-## WHERE ... IS ...
-
-This statement must appear directly after `HOWTO`, once for each parameter. It
-specifies the accepted data type.
-
-```
-HOWTO Make a <filling> sandwich on <surface>
-WHERE surface IS str
-WHERE filling IS opt
-  Cheese
-  Ham
-  Tuna
-END
-```
-
-The supported data types are as follows:
-
-| Type     | Description                       |
-|----------|-----------------------------------|
-| `str`    | Any text.                         |
-| `int`    | A positive whole number.          |
-| `sint`   | A signed whole number.            |
-| `float`  | A positive floating-point number. |
-| `sfloat` | A signed floating-point number.   |
-| `opt`    | One of a fixed set of options.    |
-
-`opt` takes a list of valid choices on the following lines, until `END` is
-encountered.
-
 ## DO ...
 
 This is the fundamental building block of scriics. It represents a simple text
