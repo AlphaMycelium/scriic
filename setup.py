@@ -12,7 +12,7 @@ setup(
     name='scriic',
     use_scm_version=True,
 
-    description='Create step-by-step instructions using Python code',
+    description='Generate step-by-step instructions using code',
     long_description=long_description,
     long_description_content_type='text/markdown',
     author='Daniel Thwaites',

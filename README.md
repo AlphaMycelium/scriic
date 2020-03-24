@@ -1,3 +1,3 @@
 # Scriic
 
-Create step-by-step instructions using Python code
+Generate step-by-step instructions using code
