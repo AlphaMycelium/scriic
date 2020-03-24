@@ -1,6 +1,11 @@
 import pytest
 
-from scriic.run import *
+from scriic.run import FileRunner
+from scriic.errors import (
+    ScriicSyntaxException,
+    MissingMetadataException,
+    InvalidMetadataException
+)
 
 
 class TestMetadata:

@@ -3,22 +3,12 @@ import re
 
 from .substitute import substitute_variables
 from .unknown import UnknownValue
-
-
-class ScriicSyntaxException(Exception):
-    pass
-
-class MetadataException(Exception):
-    pass
-
-class MissingMetadataException(MetadataException):
-    pass
-
-class InvalidMetadataException(MetadataException):
-    pass
-
-class MissingParamException(Exception):
-    pass
+from .errors import (
+    ScriicSyntaxException,
+    MissingMetadataException,
+    InvalidMetadataException,
+    MissingParamException
+)
 
 
 class FileRunner:

@@ -1,8 +1,6 @@
 import re
 
-
-class SubstitutionError(Exception):
-    pass
+from .errors import SubstitutionError
 
 
 def substitute_variables(string, values):
