@@ -38,6 +38,9 @@ setup(
     setup_requires=['setuptools_scm'],
     install_requires=['fire <1'],
     extras_require={
+        'docs': [
+            'sphinx >=2,<3'
+        ],
         'tests': [
             'pytest >=5,<6',
             'pytest-cov >=2,<3'

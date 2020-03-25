@@ -13,12 +13,13 @@ from .step import Step
 
 
 class FileRunner:
-    def __init__(self, file_path):
-        """
-        Runner for a Scriic file.
+    """
+    Runner for a Scriic file.
 
-        :param file_path: Path to the file to run.
-        """
+    :param file_path: Path to the file to run.
+    """
+
+    def __init__(self, file_path):
         self.file_path = file_path
         self.dir_path = os.path.dirname(file_path)
 

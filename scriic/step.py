@@ -2,13 +2,19 @@ from .errors import UnsetDisplayIndexException
 
 
 class Step:
-    def __init__(self, *text_elements):
-        """
-        A tree node which represents an instruction.
+    """
+    A tree node which represents an instruction.
 
-        :param text_elements: Text, values and UnknownValues to concatenate
-            together when this step is displayed
-        """
+    :param text_elements: Text, values and UnknownValues to concatenate
+        together when this step is displayed
+
+    :var children: List of child steps
+    :var display_index: Set this to a number or string when this step is
+        displayed. It is used in future steps to tell the user to refer back
+        to this step.
+    """
+
+    def __init__(self, *text_elements):
         self.text_elements = text_elements
         self.children = list()
 
@@ -23,6 +29,12 @@ class Step:
         return f'step {self.display_index}'
 
     def text(self):
+        """
+        Return the concatenated text of this step.
+
+        May require some previous steps to have been displayed if they are
+        referenced from this step.
+        """
         text = str()
         for element in self.text_elements:
             text += str(element)
