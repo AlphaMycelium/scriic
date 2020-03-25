@@ -23,9 +23,9 @@ def substitute_variables(string, values, param_mode=False):
     """
     items = list()
 
-    iter = re.finditer(r'\[(.+?)\]', string)
+    iter = re.finditer(r'\[([a-zA-Z_]\w*?)\]', string)
     if param_mode:
-        iter = re.finditer(r'\<(.+?)\>', string)
+        iter = re.finditer(r'<([a-zA-Z_]\w*?)>', string)
 
     prev_end = 0
     for match in iter:

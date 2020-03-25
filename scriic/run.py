@@ -66,7 +66,7 @@ class FileRunner:
 
         # Create a list of required parameters based on the title
         self.params = list()
-        for param in re.finditer(r'<(.+?)>', self.title):
+        for param in re.finditer(r'<([a-zA-Z_]\w*?)>', self.title):
             self.params.append(param.group(1))
 
         # Return the line metadata stopped at
@@ -134,7 +134,7 @@ class FileRunner:
         self.step.add_child(*text)
 
     def _set_doing(self, line):
-        match = re.match(r'SET (.+) DOING (.+)', line)
+        match = re.match(r'SET ([a-zA-Z_]\w*) DOING (.+)', line)
         if not match:
             raise ScriicSyntaxException(line)
 
@@ -159,7 +159,7 @@ class FileRunner:
             self.sub_params = dict()
 
     def _with_as(self, line):
-        match = re.match(r'WITH (.+) AS (.+)', line)
+        match = re.match(r'WITH (.+) AS ([a-zA-Z_]\w*)', line)
         if not match:
             raise ScriicSyntaxException(line)
 
