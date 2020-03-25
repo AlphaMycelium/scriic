@@ -3,8 +3,6 @@ import pytest
 from scriic.run import FileRunner
 from scriic.errors import (
     ScriicSyntaxException,
-    MissingMetadataException,
-    InvalidMetadataException,
     NoReturnValueException
 )
 
@@ -26,18 +24,20 @@ class TestMetadata:
             DO Something
         """.strip())
 
-        with pytest.raises(MissingMetadataException):
+        with pytest.raises(ScriicSyntaxException):
             FileRunner(tmp_file.absolute())
 
     def test_multi_howto(self, tmp_path):
+        # This is discouraged from use however since it is mentioned as
+        # possible in the docs we test that it behaves as described
         tmp_file = tmp_path / 'test.scriic'
         tmp_file.write_text("""
-            HOWTO Make a <filling> sandwich on <surface>
-            HOWTO Make a <filling> sandwich on <surface>
+            HOWTO Title 1
+            HOWTO Title 2
         """.strip())
 
-        with pytest.raises(InvalidMetadataException):
-            FileRunner(tmp_file.absolute())
+        runner = FileRunner(tmp_file.absolute())
+        assert runner.title == 'Title 2'
 
 
 class TestRun:

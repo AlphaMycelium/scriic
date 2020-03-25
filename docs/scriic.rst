@@ -4,7 +4,7 @@ Scriic Syntax
 ``HOWTO``
 =========
 
-Each Scriic file must begin with a ``HOWTO`` line which gives the task a title.
+Each Scriic file must contain a ``HOWTO`` line which gives the task a title.
 It should be clear and concise, but specific.
 
 Parameters can be accepted by enclosing a variable name in angle brackets. Try
@@ -17,6 +17,14 @@ different depending on their value (this should be created as a separate task).
 
 Notice how we take care to be extra-specific with where the sandwich will be
 made.
+
+.. note::
+  It is conventional (and makes a lot of sense) to place this title line at the
+  top of the file.
+
+  However, it is technically possible to include it anywhere, and having more
+  than one will cause the last defined value to be used. Variable values cannot
+  be substituted into the title under any circumstances.
 
 ``DO``
 ======

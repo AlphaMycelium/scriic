@@ -6,8 +6,6 @@ from .substitute import substitute_variables
 from .unknown import UnknownValue
 from .errors import (
     ScriicSyntaxException,
-    MissingMetadataException,
-    InvalidMetadataException,
     MissingParamException,
     NoReturnValueException
 )
@@ -52,7 +50,7 @@ class FileRunner:
                     self.lines.append(parsed_line)
 
         if self.title is None:
-            raise MissingMetadataException(f'{self.file_path} has no HOWTO')
+            raise ScriicSyntaxException(f'{self.file_path} has no HOWTO')
 
         # Create list of required parameters based on the title
         self.params = list()
@@ -61,11 +59,6 @@ class FileRunner:
 
     def _parse_line(self, line):
         if line.startswith('HOWTO '):
-            if self.title is not None:
-                # Only one HOWTO line is allowed
-                raise InvalidMetadataException(
-                    f'{self.file_path} has multiple HOWTOs')
-
             self.title = line[6:]
             return
 
