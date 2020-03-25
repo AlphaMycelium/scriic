@@ -51,6 +51,18 @@ class TestRun:
         with pytest.raises(ScriicSyntaxException):
             runner.run()
 
+    def test_title(self, tmp_path):
+        tmp_file = tmp_path / 'test.scriic'
+        tmp_file.write_text("""
+            HOWTO Test <param>
+        """.strip())
+
+        runner = FileRunner(tmp_file.absolute())
+        step = runner.run({'param': 'scriic'})
+
+        assert step.text() == 'Test scriic'
+        assert len(step.children) == 0
+
     def test_do(self, tmp_path):
         tmp_file = tmp_path / 'test.scriic'
         tmp_file.write_text("""
@@ -60,11 +72,10 @@ class TestRun:
         """.strip())
 
         runner = FileRunner(tmp_file.absolute())
-        steps = runner.run()
+        step = runner.run()
 
-        assert len(steps) == 2
-        assert steps[0] == 'Test scriic!'
-        assert steps[1] == 'Test scriic again!'
+        assert step.children[0].text() == 'Test scriic!'
+        assert step.children[1].text() == 'Test scriic again!'
 
     def test_do_substitution(self, tmp_path):
         tmp_file = tmp_path / 'test.scriic'
@@ -74,9 +85,9 @@ class TestRun:
         """.strip())
 
         runner = FileRunner(tmp_file.absolute())
-        steps = runner.run({'var': 'scriic'})
+        step = runner.run({'var': 'scriic'})
 
-        assert steps[0] == 'Test scriic!'
+        assert step.children[0].text() == 'Test scriic!'
 
     def test_set(self, tmp_path):
         tmp_file = tmp_path / 'test.scriic'
@@ -87,11 +98,13 @@ class TestRun:
         """.strip())
 
         runner = FileRunner(tmp_file.absolute())
-        steps = runner.run()
+        step = runner.run()
 
-        assert len(steps) == 2
-        assert steps[0] == 'Get some value'
-        assert steps[1] == 'Read the result of step 1'
+        assert len(step.children) == 2
+        assert step.children[0].text() == 'Get some value'
+
+        step.children[0].display_index = 1
+        assert step.children[1].text() == 'Read the result of step 1'
 
 
 class TestSub:
@@ -110,37 +123,15 @@ class TestSub:
         """.strip())
 
         runner = FileRunner(tmp_file_1.absolute())
-        steps = runner.run()
+        step = runner.run()
 
-        assert len(steps) == 2
-        assert steps[0] == 'This is in file 1'
-        assert steps[1] == 'This is in file 2'
+        assert len(step.children) == 2
+        assert step.children[0].text() == 'This is in file 1'
+        assert step.children[1].text() == 'Test subscriic'
+        assert len(step.children[1].children) == 1
+        assert step.children[1].children[0].text() == 'This is in file 2'
 
     def test_sub_param(self, tmp_path):
-        tmp_file_1 = tmp_path / 'test1.scriic'
-        tmp_file_1.write_text("""
-            HOWTO Test scriic
-            DO This is in file 1
-
-            SUB ./test2.scriic
-            WITH ABC AS param
-            GO
-        """.strip())
-
-        tmp_file_2 = tmp_path / 'test2.scriic'
-        tmp_file_2.write_text("""
-            HOWTO Test subscriic with <param>
-            DO The value of param is [param]
-        """.strip())
-
-        runner = FileRunner(tmp_file_1.absolute())
-        steps = runner.run()
-
-        assert len(steps) == 2
-        assert steps[0] == 'This is in file 1'
-        assert steps[1] == 'The value of param is ABC'
-
-    def test_sub_param_substitution(self, tmp_path):
         tmp_file_1 = tmp_path / 'test1.scriic'
         tmp_file_1.write_text("""
             HOWTO Test scriic with <param>
@@ -158,11 +149,13 @@ class TestSub:
         """.strip())
 
         runner = FileRunner(tmp_file_1.absolute())
-        steps = runner.run({'param': 'ABC'})
+        step = runner.run({'param': 'ABC'})
 
-        assert len(steps) == 2
-        assert steps[0] == 'This is in file 1'
-        assert steps[1] == 'The value of param is ABC'
+        assert len(step.children) == 2
+        assert step.children[0].text() == 'This is in file 1'
+        assert step.children[1].text() == 'Test subscriic with ABC'
+        assert len(step.children[1].children) == 1
+        assert step.children[1].children[0].text() == 'The value of param is ABC'
 
     def test_unexpected_go(self, tmp_path):
         tmp_file = tmp_path / 'test.scriic'

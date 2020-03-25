@@ -9,6 +9,7 @@ from .errors import (
     InvalidMetadataException,
     MissingParamException
 )
+from .step import Step
 
 
 class FileRunner:
@@ -72,12 +73,11 @@ class FileRunner:
 
     def run(self, params=None):
         """
-        Run the code and return generated steps.
+        Run the code and return generated step tree.
 
         :param params: Dictionary of parameters to pass to the script
-        :returns: List of steps as strings
+        :returns: Step instance containing a tree of child steps
         """
-        self.steps = list()
         self.sub_runner = None
         if params:
             self.variables = params.copy()
@@ -91,6 +91,8 @@ class FileRunner:
                     f'{self.file_path} is missing parameter {param}')
 
         # Run the script
+        self.step = Step(*substitute_variables(self.title, params, True))
+
         with open(self.file_path) as file:
             for line_no, line in enumerate(file):
                 self._run_line(line, line_no)
@@ -99,7 +101,7 @@ class FileRunner:
         if self.sub_runner is not None:
             raise ScriicSyntaxException('Unfinished SUB')
 
-        return self.steps
+        return self.step
 
     def _run_line(self, line, line_no):
         """
@@ -127,8 +129,8 @@ class FileRunner:
 
     # COMMANDS BEGIN HERE #
     def _do(self, line):
-        step = substitute_variables(line[3:], self.variables)
-        self.steps.append(step)
+        text = substitute_variables(line[3:], self.variables)
+        self.step.add_child(*text)
 
     def _set_doing(self, line):
         match = re.match(r'SET (.+) DOING (.+)', line)
@@ -136,11 +138,9 @@ class FileRunner:
             raise ScriicSyntaxException(line)
 
         # Create a step and get its index
-        self.steps.append(match.group(2))
-        step_index = len(self.steps) - 1
-
+        step = self.step.add_child(match.group(2))
         # Set the variable to reference the result of this step
-        self.variables[match.group(1)] = UnknownValue(step_index)
+        self.variables[match.group(1)] = UnknownValue(step)
 
     def _sub(self, line):
         # Create a runner for the subscriic
@@ -149,8 +149,8 @@ class FileRunner:
 
         if len(self.sub_runner.params) == 0:
             # This subscriic takes no parameters, run it now
-            steps = self.sub_runner.run()
-            self.steps.extend(steps)
+            step = self.sub_runner.run()
+            self.step.children.append(step)
 
             self.sub_runner = None
         else:
@@ -170,8 +170,8 @@ class FileRunner:
             raise ScriicSyntaxException('Unexpected GO')
 
         # Run the subscriic and get steps
-        steps = self.sub_runner.run(self.sub_params)
-        self.steps.extend(steps)
+        step = self.sub_runner.run(self.sub_params)
+        self.step.children.append(step)
 
         # Remove the subscriic runner now we have finished with it
         self.sub_runner = None

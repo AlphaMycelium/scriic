@@ -19,11 +19,12 @@ def run(file):
         params[param] = input(f'Parameter {param}: ')
 
     # Run the scriic
-    steps = runner.run(params)
+    step = runner.run(params)
 
     # Print steps
-    for i, step in enumerate(steps):
-        print(f'{i+1}. {step}')
+    for i, step in enumerate(step.leaf_nodes()):
+        step.display_index = i + 1
+        print(f'{step.display_index}. {step.text()}')
 
 
 # This is used as an entrypoint in setup.py

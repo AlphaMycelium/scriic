@@ -7,6 +7,11 @@ class ScriicSyntaxException(ScriicException):
     pass
 
 
+class UnsetDisplayIndexException(ScriicException):
+    """Raised when a step is referenced which has not yet been displayed."""
+    pass
+
+
 class MissingParamException(ScriicException):
     """Raised when a Scriic is ran with a missing parameter."""
     pass

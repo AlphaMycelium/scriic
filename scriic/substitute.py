@@ -3,26 +3,47 @@ import re
 from .errors import SubstitutionError
 
 
-def substitute_variables(string, values):
+def substitute_variables(string, values, param_mode=False):
     """
-    Substitute variable values into a string.
-
-    Values will be substituted where the variable name is found surrounded in
-    square brackets.
+    Convert a string into a list of substituted values and the strings in between.
 
     :param string: String to substitute values into
     :param values: Dictionary of variable names and values
-    :returns: String with values substituted in
+    :param param_mode: Set to True to use angle brackets instead of square
+    :returns: List containing strings and the substituted values in order,
+        ready to be concatenated together
     :raises: SubstitutionError if an invalid variable is referenced in the
         string
     """
-    def substitute(match):
+    items = list()
+
+    iter = re.finditer(r'\[(.+?)\]', string)
+    if param_mode:
+        iter = re.finditer(r'\<(.+?)\>', string)
+
+    prev_end = 0
+    for match in iter:
+        # Add the string from between this match and the previous one
+        split_string = string[prev_end:match.start()]
+        if len(split_string) > 0:
+            items.append(split_string)
+
         variable_name = match.group(1)
         try:
-            return str(values[variable_name])
+            if type(values[variable_name]) == list:
+                # The parameter has been substituted into before,
+                # extend our list with its items to avoid having sub-lists
+                items.extend(values[variable_name])
+            else:
+                items.append(values[variable_name])
         except KeyError:
             # This is an non-existant variable
             raise SubstitutionError(f'Variable {variable_name} does not exist')
 
-    # Call substitute function for each match and replace with return value
-    return re.sub(r'\[(.+?)\]', substitute, string)
+        prev_end = match.end()
+
+    split_string = string[prev_end:]
+    if len(split_string) > 0:
+        items.append(split_string)
+
+    return items
