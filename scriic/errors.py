@@ -34,3 +34,8 @@ class MissingMetadataException(MetadataException):
 class InvalidMetadataException(MetadataException):
     """Raised when a Scriic file has multiple HOWTO lines."""
     pass
+
+
+class NoReturnValueException(ScriicException):
+    """Raised when SUB INTO is used with a subscriic which did not return anything."""
+    pass

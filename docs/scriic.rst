@@ -52,6 +52,25 @@ It should be used whenever you write a step that could be re-used elsewhere. ::
 
 File paths are relative to the current script.
 
+``SUB INTO``
+------------
+
+Adding ``INTO`` after ``SUB`` allows you to receive a returned value from the
+subscriic::
+
+    SUB ./toggle_light.scriic INTO is_light_on
+
+``RETURN``
+==========
+
+This sets the value to return when this scriic is called using ``SUB INTO``.
+It does not actually end the execution. ::
+
+    RETURN Some [value]
+
+.. note::
+  A second ``RETURN`` statement will overwrite the previous value.
+
 ``WITH AS``
 ===========
 

@@ -7,7 +7,8 @@ from .errors import (
     ScriicSyntaxException,
     MissingMetadataException,
     InvalidMetadataException,
-    MissingParamException
+    MissingParamException,
+    NoReturnValueException
 )
 from .step import Step
 
@@ -28,7 +29,8 @@ class FileRunner:
             'SET': self._set_doing,
             'SUB': self._sub,
             'WITH': self._with_as,
-            'GO': self._go
+            'GO': self._go,
+            'RETURN': self._return
         }
 
         self.code_begins_at = self._get_meta() + 1
@@ -80,6 +82,7 @@ class FileRunner:
         :returns: Step instance containing a tree of child steps
         """
         self.sub_runner = None
+        self.return_value = None
         if params:
             self.variables = params.copy()
         else:
@@ -102,6 +105,7 @@ class FileRunner:
         if self.sub_runner is not None:
             raise ScriicSyntaxException('Unfinished SUB')
 
+        self.step.returned = self.return_value
         return self.step
 
     def _run_line(self, line, line_no):
@@ -144,8 +148,12 @@ class FileRunner:
         self.variables[match.group(1)] = UnknownValue(step)
 
     def _sub(self, line):
+        match = re.match(r'SUB (\S*)( INTO ([a-zA-Z_]\w*))?', line)
+        if match is None:
+            raise ScriicSyntaxException(line)
+
         # Create a runner for the subscriic
-        sub_path = os.path.join(self.dir_path, line[4:])
+        sub_path = os.path.join(self.dir_path, match.group(1))
         self.sub_runner = FileRunner(sub_path)
 
         if len(self.sub_runner.params) == 0:
@@ -153,10 +161,18 @@ class FileRunner:
             step = self.sub_runner.run()
             self.step.children.append(step)
 
+            if match.group(3):
+                # Store the returned value
+                if step.returned is None:
+                    raise NoReturnValueException(
+                        f'{sub_path} did not return a value')
+                self.variables[match.group(3)] = step.returned
+
             self.sub_runner = None
         else:
             # Parameters need to be given using WITH AS
             self.sub_params = dict()
+            self.return_var = match.group(3)
 
     def _with_as(self, line):
         match = re.match(r'WITH (.+) AS ([a-zA-Z_]\w*)', line)
@@ -174,6 +190,16 @@ class FileRunner:
         step = self.sub_runner.run(self.sub_params)
         self.step.children.append(step)
 
+        if self.return_var:
+            if step.returned is None:
+                raise NoReturnValueException(
+                    f'{self.sub_runner.file_path} did not return a value')
+            self.variables[self.return_var] = step.returned
+
         # Remove the subscriic runner now we have finished with it
         self.sub_runner = None
         del self.sub_params
+        del self.return_var
+
+    def _return(self, line):
+        self.return_value = substitute_variables(line[7:], self.variables)

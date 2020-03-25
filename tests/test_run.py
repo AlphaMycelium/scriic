@@ -4,7 +4,8 @@ from scriic.run import FileRunner
 from scriic.errors import (
     ScriicSyntaxException,
     MissingMetadataException,
-    InvalidMetadataException
+    InvalidMetadataException,
+    NoReturnValueException
 )
 
 
@@ -156,6 +157,71 @@ class TestSub:
         assert step.children[1].text() == 'Test subscriic with ABC'
         assert len(step.children[1].children) == 1
         assert step.children[1].children[0].text() == 'The value of param is ABC'
+
+    def test_sub_return(self, tmp_path):
+        tmp_file_1 = tmp_path / 'test1.scriic'
+        tmp_file_1.write_text("""
+            HOWTO Test scriic
+            SUB ./test2.scriic INTO val
+            DO Subscriic returned [val]
+        """.strip())
+
+        tmp_file_2 = tmp_path / 'test2.scriic'
+        tmp_file_2.write_text("""
+            HOWTO Test subscriic
+            RETURN ABC
+        """.strip())
+
+        runner = FileRunner(tmp_file_1.absolute())
+        step = runner.run()
+
+        assert len(step.children) == 2
+        assert step.children[0].text() == 'Test subscriic'
+        assert len(step.children[0].children) == 0
+        assert step.children[1].text() == 'Subscriic returned ABC'
+
+    def test_sub_param_and_return(self, tmp_path):
+        tmp_file_1 = tmp_path / 'test1.scriic'
+        tmp_file_1.write_text("""
+            HOWTO Test scriic
+            SUB ./test2.scriic INTO val
+            WITH ABC AS param
+            GO
+            DO Subscriic returned [val]
+        """.strip())
+
+        tmp_file_2 = tmp_path / 'test2.scriic'
+        tmp_file_2.write_text("""
+            HOWTO Test subscriic with <param>
+            DO Received [param]
+            RETURN DEF
+        """.strip())
+
+        runner = FileRunner(tmp_file_1.absolute())
+        step = runner.run()
+
+        assert len(step.children) == 2
+        assert step.children[0].text() == 'Test subscriic with ABC'
+        assert len(step.children[0].children) == 1
+        assert step.children[0].children[0].text() == 'Received ABC'
+        assert step.children[1].text() == 'Subscriic returned DEF'
+
+    def test_sub_missing_return(self, tmp_path):
+        tmp_file_1 = tmp_path / 'test1.scriic'
+        tmp_file_1.write_text("""
+            HOWTO Test scriic
+            SUB ./test2.scriic INTO val
+        """.strip())
+
+        tmp_file_2 = tmp_path / 'test2.scriic'
+        tmp_file_2.write_text("""
+            HOWTO Test subscriic
+            DO not return anything
+        """.strip())
+
+        runner = FileRunner(tmp_file_1.absolute())
+        with pytest.raises(NoReturnValueException):
+            runner.run()
 
     def test_unexpected_go(self, tmp_path):
         tmp_file = tmp_path / 'test.scriic'
