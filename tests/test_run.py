@@ -18,7 +18,7 @@ class TestMetadata:
 
         runner = FileRunner(tmp_file.absolute())
         assert runner.title == 'Make a <filling> sandwich on <surface>'
-        assert runner.code_begins_at == 1
+        assert runner.params == ['filling', 'surface']
 
     def test_no_howto(self, tmp_path):
         tmp_file = tmp_path / 'test.scriic'
@@ -48,9 +48,8 @@ class TestRun:
             WHERE THERE ARE INVALID COMMANDS
         """.strip())
 
-        runner = FileRunner(tmp_file.absolute())
         with pytest.raises(ScriicSyntaxException):
-            runner.run()
+            FileRunner(tmp_file.absolute())
 
     def test_title(self, tmp_path):
         tmp_file = tmp_path / 'test.scriic'

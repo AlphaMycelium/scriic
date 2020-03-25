@@ -34,46 +34,49 @@ class FileRunner:
             r'RETURN (.+)': self._return
         }
 
-        self.code_begins_at = self._get_meta() + 1
+        self._parse()
+        print(self.lines)
 
-    def _get_meta(self):
-        """
-        Read the metadata from the start of the code and prepare to run.
-
-        :returns: Line number metadata ends on
-        """
+    def _parse(self):
+        self.lines = list()
         self.title = None
 
         with open(self.file_path) as file:
-            for line_no, line in enumerate(file):
+            for line in file:
                 line = line.strip()
+                if len(line) == 0:
+                    continue  # This line is blank, skip it
 
-                if line.startswith('HOWTO '):
-                    if self.title is None:
-                        # Store the HOWTO text as the title
-                        self.title = line[6:]
-                    else:
-                        raise InvalidMetadataException(
-                            f'{self.file_path} has more than one HOWTO line')
+                parsed_line = self._parse_line(line)
+                if parsed_line is not None:
+                    self.lines.append(parsed_line)
 
-                else:
-                    if len(line) > 0:
-                        # This must be a code line
-                        line_no -= 1
-                        break
-
-        # Check that we got all required data
         if self.title is None:
-            raise MissingMetadataException(
-                f'{self.file_path} does not begin with a HOWTO line')
+            raise MissingMetadataException(f'{self.file_path} has no HOWTO')
 
-        # Create a list of required parameters based on the title
+        # Create list of required parameters based on the title
         self.params = list()
         for param in re.finditer(r'<([a-zA-Z_]\w*?)>', self.title):
             self.params.append(param.group(1))
 
-        # Return the line metadata stopped at
-        return line_no
+    def _parse_line(self, line):
+        if line.startswith('HOWTO '):
+            if self.title is not None:
+                # Only one HOWTO line is allowed
+                raise InvalidMetadataException(
+                    f'{self.file_path} has multiple HOWTOs')
+
+            self.title = line[6:]
+            return
+
+        # Find a command which matches this line
+        for command, func in self.commands.items():
+            match = re.match(command, line)
+            if match is not None:
+                return func, match
+
+        # No commands matched
+        raise ScriicSyntaxException(line)
 
     def run(self, params=None):
         """
@@ -98,9 +101,9 @@ class FileRunner:
         # Run the script
         self.step = Step(*substitute_variables(self.title, params, True))
 
-        with open(self.file_path) as file:
-            for line_no, line in enumerate(file):
-                self._run_line(line, line_no)
+        for line in self.lines:
+            # Call the function chosen during parsing
+            line[0](line[1])
 
         # Check for unfinished SUBs
         if self.sub_runner is not None:
@@ -108,31 +111,6 @@ class FileRunner:
 
         self.step.returned = self.return_value
         return self.step
-
-    def _run_line(self, line, line_no):
-        """
-        Run one line of code.
-
-        :param line: Text of this line
-        :param line_no: Position of this line in the file
-        """
-        if line_no < self.code_begins_at:
-            return  # Skip metadata
-
-        line = line.strip()
-        if len(line) == 0:
-            return  # This is a blank line, skip it
-
-        # Look for a command which matches this line
-        for command, func in self.commands.items():
-            # Attempt to match the line with the command regex
-            match = re.match(command, line)
-            if match:
-                func(match)
-                return
-
-        # Unknown command
-        raise ScriicSyntaxException(line)
 
     def _run_subscriic(self, params, return_var=None):
         """
