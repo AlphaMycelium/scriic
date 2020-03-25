@@ -133,6 +133,25 @@ class FileRunner:
         # Unknown command
         raise ScriicSyntaxException(line)
 
+    def _run_subscriic(self, params, return_var=None):
+        """
+        Run self.sub_runner with the given parameters.
+
+        :param params: Parameters to pass to the subscriic
+        :param return_var: Variable to store return value in
+        """
+        # Run the subscriic and save steps
+        step = self.sub_runner.run(params)
+        self.step.children.append(step)
+
+        if return_var:
+            if step.returned is None:
+                # We expected the subscriic to have returned something
+                raise NoReturnValueException(
+                    f'{self.sub_runner.file_path} did not return a value')
+
+            self.variables[return_var] = step.returned
+
     # COMMANDS BEGIN HERE #
     def _do(self, match):
         text = substitute_variables(match.group(1), self.variables)
@@ -151,16 +170,7 @@ class FileRunner:
 
         if len(self.sub_runner.params) == 0:
             # This subscriic takes no parameters, run it now
-            step = self.sub_runner.run()
-            self.step.children.append(step)
-
-            if match.group(3):
-                # Store the returned value
-                if step.returned is None:
-                    raise NoReturnValueException(
-                        f'{sub_path} did not return a value')
-                self.variables[match.group(3)] = step.returned
-
+            self._run_subscriic({}, match.group(3))
             self.sub_runner = None
         else:
             # Parameters need to be given using WITH AS
@@ -175,15 +185,7 @@ class FileRunner:
         if self.sub_runner is None:
             raise ScriicSyntaxException('Unexpected GO')
 
-        # Run the subscriic and get steps
-        step = self.sub_runner.run(self.sub_params)
-        self.step.children.append(step)
-
-        if self.return_var:
-            if step.returned is None:
-                raise NoReturnValueException(
-                    f'{self.sub_runner.file_path} did not return a value')
-            self.variables[self.return_var] = step.returned
+        self._run_subscriic(self.sub_params, self.return_var)
 
         # Remove the subscriic runner now we have finished with it
         self.sub_runner = None
