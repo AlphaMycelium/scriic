@@ -48,9 +48,12 @@ for later use. ::
 This instruction allows you to import and run steps from another Scriic file.
 It should be used whenever you write a step that could be re-used elsewhere. ::
 
-    SUB ./switch_light_on.scriic
+    SUB switch_light_on.scriic
 
-File paths are relative to the current script.
+File paths are relative to the current script. You can also load a file from a
+Python package (installed via ``pip``)::
+
+    SUB some_package:switch_light_on.scriic
 
 ``SUB INTO``
 ------------

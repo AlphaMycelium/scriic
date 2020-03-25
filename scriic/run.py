@@ -1,5 +1,6 @@
 import os.path
 import re
+import pkg_resources
 
 from .substitute import substitute_variables
 from .unknown import UnknownValue
@@ -27,7 +28,7 @@ class FileRunner:
         self.commands = {
             r'DO (.+)': self._do,
             r'SET ([a-zA-Z_]\w*) DOING (.+)': self._set_doing,
-            r'SUB (\S+)( INTO ([a-zA-Z_]\w*))?': self._sub,
+            r'SUB (([a-zA-Z_]\w*):)?(\S+)( INTO ([a-zA-Z_]\w*))?': self._sub,
             r'WITH (.+) AS ([a-zA-Z_]\w*)': self._with_as,
             r'GO': self._go,
             r'RETURN (.+)': self._return
@@ -164,18 +165,28 @@ class FileRunner:
         self.variables[match.group(1)] = UnknownValue(step)
 
     def _sub(self, match):
+        package_name = match.group(2)
+        file_path = match.group(3)
+        return_var = match.group(5)
+
+        if package_name is not None:
+            # Look for file inside a Python package
+            path = pkg_resources.resource_filename(package_name, file_path)
+        else:
+            # Look for file relative to current scriic
+            path = os.path.join(self.dir_path, file_path)
+
         # Create a runner for the subscriic
-        sub_path = os.path.join(self.dir_path, match.group(1))
-        self.sub_runner = FileRunner(sub_path)
+        self.sub_runner = FileRunner(path)
 
         if len(self.sub_runner.params) == 0:
             # This subscriic takes no parameters, run it now
-            self._run_subscriic({}, match.group(3))
+            self._run_subscriic({}, return_var)
             self.sub_runner = None
         else:
             # Parameters need to be given using WITH AS
             self.sub_params = dict()
-            self.return_var = match.group(3)
+            self.return_var = return_var
 
     def _with_as(self, match):
         param = substitute_variables(match.group(1), self.variables)
