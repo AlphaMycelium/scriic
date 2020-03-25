@@ -34,6 +34,10 @@ setup(
     },
 
     packages=find_packages(exclude=['docs', 'tests']),
+    package_data={
+        'scriicsics': ['*.scriic']
+    },
+
     python_requires='>=3.6,<4',
     setup_requires=['setuptools_scm'],
     install_requires=['fire <1'],
