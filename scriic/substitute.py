@@ -5,13 +5,19 @@ from .errors import SubstitutionError
 
 def substitute_variables(string, values, param_mode=False):
     """
-    Convert a string into a list of substituted values and the strings in between.
+    Substitute variable values into a string.
+
+    Variable names surrounded in [square] or <angle> brackets (depending on
+    param_mode) will be replaced with their value from the given dictionary.
+
+    The result is returned as a list which contains the values and the strings
+    in between them, to allow references to live objects such as other steps to
+    keep updating until the text is concatenated using Step.text().
 
     :param string: String to substitute values into
     :param values: Dictionary of variable names and values
     :param param_mode: Set to True to use angle brackets instead of square
-    :returns: List containing strings and the substituted values in order,
-        ready to be concatenated together
+    :returns: List containing strings and the substituted values
     :raises: SubstitutionError if an invalid variable is referenced in the
         string
     """
