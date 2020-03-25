@@ -25,12 +25,12 @@ class FileRunner:
         self.dir_path = os.path.dirname(file_path)
 
         self.commands = {
-            'DO': self._do,
-            'SET': self._set_doing,
-            'SUB': self._sub,
-            'WITH': self._with_as,
-            'GO': self._go,
-            'RETURN': self._return
+            r'DO (.+)': self._do,
+            r'SET ([a-zA-Z_]\w*) DOING (.+)': self._set_doing,
+            r'SUB (\S+)( INTO ([a-zA-Z_]\w*))?': self._sub,
+            r'WITH (.+) AS ([a-zA-Z_]\w*)': self._with_as,
+            r'GO': self._go,
+            r'RETURN (.+)': self._return
         }
 
         self.code_begins_at = self._get_meta() + 1
@@ -122,36 +122,29 @@ class FileRunner:
         if len(line) == 0:
             return  # This is a blank line, skip it
 
-        # Find a command which matches this line
-        for command in self.commands:
-            if line.startswith(command):
-                # Run the command
-                self.commands[command](line)
+        # Look for a command which matches this line
+        for command, func in self.commands.items():
+            # Attempt to match the line with the command regex
+            match = re.match(command, line)
+            if match:
+                func(match)
                 return
 
         # Unknown command
         raise ScriicSyntaxException(line)
 
     # COMMANDS BEGIN HERE #
-    def _do(self, line):
-        text = substitute_variables(line[3:], self.variables)
+    def _do(self, match):
+        text = substitute_variables(match.group(1), self.variables)
         self.step.add_child(*text)
 
-    def _set_doing(self, line):
-        match = re.match(r'SET ([a-zA-Z_]\w*) DOING (.+)', line)
-        if not match:
-            raise ScriicSyntaxException(line)
-
+    def _set_doing(self, match):
         # Create a step and get its index
         step = self.step.add_child(match.group(2))
         # Set the variable to reference the result of this step
         self.variables[match.group(1)] = UnknownValue(step)
 
-    def _sub(self, line):
-        match = re.match(r'SUB (\S*)( INTO ([a-zA-Z_]\w*))?', line)
-        if match is None:
-            raise ScriicSyntaxException(line)
-
+    def _sub(self, match):
         # Create a runner for the subscriic
         sub_path = os.path.join(self.dir_path, match.group(1))
         self.sub_runner = FileRunner(sub_path)
@@ -174,15 +167,11 @@ class FileRunner:
             self.sub_params = dict()
             self.return_var = match.group(3)
 
-    def _with_as(self, line):
-        match = re.match(r'WITH (.+) AS ([a-zA-Z_]\w*)', line)
-        if not match:
-            raise ScriicSyntaxException(line)
-
+    def _with_as(self, match):
         param = substitute_variables(match.group(1), self.variables)
         self.sub_params[match.group(2)] = param
 
-    def _go(self, line):
+    def _go(self, match):
         if self.sub_runner is None:
             raise ScriicSyntaxException('Unexpected GO')
 
@@ -201,5 +190,6 @@ class FileRunner:
         del self.sub_params
         del self.return_var
 
-    def _return(self, line):
-        self.return_value = substitute_variables(line[7:], self.variables)
+    def _return(self, match):
+        self.return_value = substitute_variables(
+            match.group(1), self.variables)
