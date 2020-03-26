@@ -2,6 +2,9 @@ from setuptools import setup, find_packages
 from os import path
 
 
+__version__ = '0.0.0'
+
+
 # Read long description from README.md
 here = path.abspath(path.dirname(__file__))
 with open(path.join(here, 'README.md'), encoding='utf-8') as readme:
@@ -10,7 +13,7 @@ with open(path.join(here, 'README.md'), encoding='utf-8') as readme:
 
 setup(
     name='scriic',
-    use_scm_version=True,
+    version=__version__,
 
     description='Generate overcomplicated instructions using a mini-language',
     long_description=long_description,
@@ -39,7 +42,6 @@ setup(
     },
 
     python_requires='>=3.6,<4',
-    setup_requires=['setuptools_scm'],
     install_requires=['fire <1'],
     extras_require={
         'docs': [
