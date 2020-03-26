@@ -1,0 +1,10 @@
+HOWTO Read <text"> from <location>
+
+LETTERS char IN [text]
+  SUB ./look.scriic
+  WITH the character [char"] on [location] AS thing
+  GO
+  DO Remember the character [char"] on [location] in your short-term memory
+END
+
+DO Recall the characters you have committed to your short-term memory and join them into a character, word, group of words, sentence, paragraph, or other piece of writing, and store that character, word, group of words, sentence, paragraph, or other piece of writing in your short-term memory
