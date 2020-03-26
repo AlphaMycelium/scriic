@@ -229,7 +229,7 @@ class TestSub:
         with pytest.raises(ScriicRuntimeException):
             runner.run()
 
-    def test_unexpected_go(self, tmp_path):
+    def test_unexpected_sub(self, tmp_path):
         tmp_file_1 = tmp_path / 'test1.scriic'
         tmp_file_1.write_text("""
             HOWTO Test scriic
