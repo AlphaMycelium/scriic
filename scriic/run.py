@@ -12,7 +12,10 @@ class FileRunner:
     """
     Runner for a Scriic file.
 
+    The file will be loaded and parsed as soon as this class is constructed.
+
     :param file_path: Path to the file to run.
+    :var params: List of parametrs required by this Scriic.
     """
 
     def __init__(self, file_path):
@@ -32,6 +35,11 @@ class FileRunner:
         print(self.lines)
 
     def _parse(self):
+        """
+        Load the file and parse it into self.lines.
+
+        :raises ScriicSyntaxException: One or more lines have invalid syntax.
+        """
         self.lines = list()
         self.title = None
 
@@ -54,6 +62,12 @@ class FileRunner:
             self.params.append(param.group(1))
 
     def _parse_line(self, line):
+        """
+        Parse a single line.
+
+        :returns: Tuple of (function, regex match), or None.
+        :raises ScriicSyntaxException: The line did not match any commands.
+        """
         if line.startswith('HOWTO '):
             self.title = line[6:]
             return
@@ -71,8 +85,10 @@ class FileRunner:
         """
         Run the code and return generated step tree.
 
-        :param params: Dictionary of parameters to pass to the script
-        :returns: Step instance containing a tree of child steps
+        :param params: Dictionary of parameters to pass to the script.
+        :returns: Step instance containing a tree of child steps.
+        :raises ScriicRuntimeException:
+            A problem was encountered during execution.
         """
         self.sub_runner = None
         self.return_value = None

@@ -6,12 +6,13 @@ class Step:
     A tree node which represents an instruction.
 
     :param text_elements: Text, values and UnknownValues to concatenate
-        together when this step is displayed
+        together when this step is displayed.
 
-    :var children: List of child steps
-    :var display_index: Set this to a number or string when this step is
-        displayed. It is used in future steps to tell the user to refer back
-        to this step.
+    :var children: List of child steps.
+    :var display_index:
+        When the step is displayed or rendered, this should be set to a number
+        or string which can be used by future steps to tell the user to refer
+        back to this step.
     """
 
     def __init__(self, *text_elements):
@@ -32,8 +33,9 @@ class Step:
         """
         Return the concatenated text of this step.
 
-        May require some previous steps to have been displayed if they are
-        referenced from this step.
+        :raises UnsetDisplayIndexException:
+            This step needs to reference a previous step which has not yet been
+            marked as displayed.
         """
         text = str()
         for element in self.text_elements:

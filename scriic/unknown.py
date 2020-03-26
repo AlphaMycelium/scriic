@@ -2,7 +2,7 @@ class UnknownValue:
     """
     An unknown value which is the result of an observation step.
 
-    :param step: The step this value has originated from
+    :param step: The step this value has originated from.
     """
 
     def __init__(self, step):

@@ -8,18 +8,18 @@ def substitute_variables(string, values, param_mode=False):
     Substitute variable values into a string.
 
     Variable names surrounded in [square] or <angle> brackets (depending on
-    param_mode) will be replaced with their value from the given dictionary.
+    ``param_mode``) will be replaced with their value from the given dictionary.
 
     The result is returned as a list which contains the values and the strings
     in between them, to allow references to live objects such as other steps to
-    keep updating until the text is concatenated using Step.text().
+    keep updating until the text is concatenated using :meth:`Step.text`.
 
-    :param string: String to substitute values into
-    :param values: Dictionary of variable names and values
-    :param param_mode: Set to True to use angle brackets instead of square
-    :returns: List containing strings and the substituted values
-    :raises: SubstitutionError if an invalid variable is referenced in the
-        string
+    :param string: String to substitute values into.
+    :param values: Dictionary of variable names and values.
+    :param param_mode: Set to True to use angle brackets instead of square.
+    :returns: List containing strings and the substituted values.
+    :raises ScriicRuntimeException:
+        An invalid variable is referenced in the string.
     """
     items = list()
 
