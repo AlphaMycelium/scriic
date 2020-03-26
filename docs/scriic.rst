@@ -112,3 +112,22 @@ This very simple command commits the parameters you have specified using
 .. note::
   If the subscriic takes no parameters, ``GO`` will be implicitly called and
   you should not include it.
+
+``LETTERS IN``
+==============
+
+Loop over each letter in some text, storing the current letter in a variable. ::
+
+    HOWTO Say hello
+    LETTERS char IN Hello
+      DO Say "[char]"
+    END
+
+.. warning::
+  ``LETTERS IN`` does not currently work with unknown values (originating
+  from ``SET DOING``).
+
+``END``
+=======
+
+This is used to end a code block after a looping or switching statement.

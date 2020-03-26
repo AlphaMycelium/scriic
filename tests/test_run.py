@@ -279,3 +279,33 @@ class TestSub:
         runner = FileRunner(tmp_file.absolute())
         with pytest.raises(FileNotFoundError):
             runner.run()
+
+
+class TestLoop:
+    def test_letters(self, tmp_path):
+        tmp_file = tmp_path / 'test.scriic'
+        tmp_file.write_text("""
+            HOWTO Test scriic
+            LETTERS char IN Hello
+                DO [char]
+            END
+        """.strip())
+
+        runner = FileRunner(tmp_file.absolute())
+        step = runner.run()
+
+        assert len(step.children) == 5
+        for i, char in enumerate('Hello'):
+            assert step.children[i].text() == char
+
+    def test_missing_end(self, tmp_path):
+        tmp_file = tmp_path / 'test.scriic'
+        tmp_file.write_text("""
+            HOWTO Test scriic
+            LETTERS char IN Hello
+                DO [char]
+        """.strip())
+
+        runner = FileRunner(tmp_file.absolute())
+        with pytest.raises(ScriicRuntimeException):
+            runner.run()

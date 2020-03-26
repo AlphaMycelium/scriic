@@ -28,7 +28,9 @@ class FileRunner:
             r'SUB (([a-zA-Z_]\w*):)?(\S+)( INTO ([a-zA-Z_]\w*))?': self._sub,
             r'WITH (.+) AS ([a-zA-Z_]\w*)': self._with_as,
             r'GO': self._go,
-            r'RETURN (.+)': self._return
+            r'RETURN (.+)': self._return,
+            r'LETTERS ([a-zA-Z_]\w*) IN (.+)': self._letters_in,
+            r'END': self._end
         }
 
         self._parse()
@@ -97,6 +99,12 @@ class FileRunner:
         else:
             self.variables = dict()
 
+        # List of functions to call when END is reached
+        # There should be one for each open block
+        # It is up to the function to remove itself if the block has closed
+        # The function may return a line to jump to (for creating loops)
+        self.open_blocks = list()
+
         # Check that all parameters have been set
         for param in self.params:
             if param not in self.variables:
@@ -106,13 +114,25 @@ class FileRunner:
         # Run the script
         self.step = Step(*substitute_variables(self.title, params, True))
 
-        for line in self.lines:
+        self.current_line = 0
+        while self.current_line < len(self.lines):
             # Call the function chosen during parsing
-            line[0](line[1])
+            line = self.lines[self.current_line]
+            next_line = line[0](line[1])
+
+            if next_line is not None:
+                # The function returned a line number, go to that line
+                self.current_line = next_line
+            else:
+                # Go to the next line
+                self.current_line += 1
 
         # Check for unfinished SUBs
         if self.sub_runner is not None:
             raise ScriicRuntimeException('Unfinished SUB')
+        # Check for unclosed blocks
+        if len(self.open_blocks) > 0:
+            raise ScriicRuntimeException('Missing END')
 
         self.step.returned = self.return_value
         return self.step
@@ -193,3 +213,44 @@ class FileRunner:
     def _return(self, match):
         self.return_value = substitute_variables(
             match.group(1), self.variables)
+
+    def _letters_in(self, match):
+        var = match.group(1)
+        substitution = substitute_variables(match.group(2), self.variables)
+
+        if any([type(x) == UnknownValue for x in substitution]):
+            # TODO: Support LETTERS IN with unknown values
+            raise ScriicRuntimeException(
+                'LETTERS IN cannot currently be used with unknown values.')
+        else:
+            # We know the exact value of the string
+            # Repeat the instructions directly
+            string = ''.join([str(x) for x in substitution])
+            self._letters_known(var, string)
+
+    def _letters_known(self, var, string):
+        """LETTERS IN for a string we know the exact value of."""
+        block_start = self.current_line + 1
+
+        i = 0
+        self.variables[var] = string[0]
+
+        def loop():
+            nonlocal i
+            i += 1
+            if i >= len(string):
+                # Reached the end of the string
+                self.open_blocks.pop(-1)
+                return
+
+            self.variables[var] = string[i]
+            # Loop back to the beginning of the block
+            return block_start
+        self.open_blocks.append(loop)
+
+    def _end(self, match):
+        if len(self.open_blocks) == 0:
+            raise ScriicRuntimeException(f'{self.file_path}: Unexpected END')
+
+        # Call the function registered when this block was opened
+        return self.open_blocks[-1]()
