@@ -270,6 +270,10 @@ class FileRunner:
             # Get the first step inside the block
             if len(self.step.children) > goto_index:
                 return_step = self.step.children[goto_index]
+                # Get its first leaf node, since we are sure that that
+                # will be displayed
+                return_step = list(return_step.leaf_nodes())[0]
+
                 # Add a step telling the user to go back to it
                 self.step.add_child(
                     'Go to ', return_step,
