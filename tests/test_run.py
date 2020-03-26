@@ -345,6 +345,33 @@ class TestLoop:
         for i, char in enumerate('Hello'):
             assert step.children[i].text() == char
 
+    def test_unknown_letters(self, tmp_path):
+        tmp_file = tmp_path / 'test.scriic'
+        tmp_file.write_text("""
+            HOWTO Test scriic
+            SET string DOING Get a string
+            LETTERS char IN [string]
+                DO Say [char"]
+            END
+        """.strip())
+
+        runner = FileRunner(tmp_file.absolute())
+        step = runner.run()
+
+        assert len(step.children) == 4
+        assert step.children[0].text() == 'Get a string'
+        step.children[0].display_index = 1
+        assert step.children[1].text() == (
+            'Get the first letter of the result of step 1, or the next letter '
+            'if you are returning from a future step'
+        )
+        step.children[1].display_index = 2
+        assert step.children[2].text() == 'Say the result of step 2'
+        assert step.children[3].text() == (
+            'If you haven\'t yet reached the last letter of the result of '
+            'step 1, go to step 2'
+        )
+
     def test_missing_end(self, tmp_path):
         tmp_file = tmp_path / 'test.scriic'
         tmp_file.write_text("""

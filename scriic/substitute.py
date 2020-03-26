@@ -47,7 +47,10 @@ def substitute_variables(string, values, param_mode=False):
 
         # Check if we need to add quotation marks
         has_quotation = match.group(2) is not None
-        if type(values[variable_name]) == UnknownValue:
+        if (
+            type(values[variable_name]) == Value and
+            values[variable_name].is_unknown()
+        ) or type(values[variable_name]) == UnknownValue:
             has_quotation = False
 
         if has_quotation:

@@ -300,9 +300,9 @@ class FileRunner:
         substitution = substitute_variables(match.group(2), self.variables)
 
         if substitution.is_unknown():
-            # TODO: Support LETTERS IN with unknown values
-            raise ScriicRuntimeException(
-                'LETTERS IN cannot currently be used with unknown values.')
+            # We don't know the exact value of the string
+            # Ask the user to jump back and repeat for each letter
+            self._letters_unknown(var, substitution)
         else:
             # We know the exact value of the string
             # Repeat the instructions directly
@@ -327,6 +327,22 @@ class FileRunner:
             # Loop back to the beginning of the block
             return block_start
         self.open_blocks.append(loop)
+
+    def _letters_unknown(self, var, string):
+        """LETTERS IN for an unknown string."""
+        goto_step = self.step.add_child(Value(
+            'Get the first letter of ', string, ', or the next letter '
+            'if you are returning from a future step'
+        ))
+        self._set_variable(var, UnknownValue(goto_step))
+
+        def add_repeat_step():
+            self.step.add_child(Value(
+                'If you haven\'t yet reached the last letter of ', string,
+                ', go to ', goto_step
+            ))
+            self.open_blocks.pop(-1)
+        self.open_blocks.append(add_repeat_step)
 
     def _end(self, match):
         if len(self.open_blocks) == 0:
