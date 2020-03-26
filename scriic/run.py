@@ -30,6 +30,7 @@ class FileRunner:
             r'GO': self._go,
             r'RETURN (.+)': self._return,
             r'LETTERS ([a-zA-Z_]\w*) IN (.+)': self._letters_in,
+            r'REPEAT ((\d+)|([a-zA-Z_]\w*))': self._repeat,
             r'END': self._end
         }
 
@@ -213,6 +214,66 @@ class FileRunner:
     def _return(self, match):
         self.return_value = substitute_variables(
             match.group(1), self.variables)
+
+    def _repeat(self, match):
+        if match.group(2):
+            # Literal value
+            times = match.group(2)
+        else:
+            # Variable name
+            try:
+                times = self.variables[match.group(3)]
+            except KeyError:
+                raise ScriicRuntimeException(
+                    f'{self.file_path}: Invalid variable for REPEAT')
+
+        if type(times) == UnknownValue:
+            # We cannot just repeat the instructions because we do not know
+            # an exact amount of times
+            self._repeat_unknown(times)
+        else:
+            try:
+                times = int(times)
+            except ValueError:
+                raise ScriicRuntimeException(
+                    f'Cannot parse {times} as a number of times for REPEAT')
+            self._repeat_known(times)
+
+    def _repeat_known(self, times):
+        """REPEAT for a known number of times."""
+        i = 0
+        block_start = self.current_line + 1
+
+        def loop():
+            nonlocal i
+            i += 1
+            if i >= times:
+                # Reached the target number of times
+                self.open_blocks.pop(-1)
+                return
+
+            # Loop back to the beginning of the block
+            return block_start
+        self.open_blocks.append(loop)
+
+    def _repeat_unknown(self, times):
+        """REPEAT for an UnknownValue of times."""
+        goto_index = len(self.step.children)
+
+        def add_repeat_step():
+            # Get the first step inside the block
+            if len(self.step.children) > goto_index:
+                return_step = self.step.children[goto_index]
+                # Add a step telling the user to go back to it
+                self.step.add_child(
+                    'Go to ', return_step,
+                    ' and repeat the number of times from ', times.step
+                )
+
+            # If we don't have a step then the loop is empty
+
+            self.open_blocks.pop(-1)
+        self.open_blocks.append(add_repeat_step)
 
     def _letters_in(self, match):
         var = match.group(1)

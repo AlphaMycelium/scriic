@@ -113,12 +113,31 @@ This very simple command commits the parameters you have specified using
   If the subscriic takes no parameters, ``GO`` will be implicitly called and
   you should not include it.
 
+``REPEAT``
+==========
+
+Repeat for a certain number of times::
+
+    REPEAT 5
+      DO Something
+    END
+
+You can also use an amount from a variable name::
+
+    SET times DOING Get a number of times to repeat
+    REPEAT times
+      DO Something
+    END
+
+.. warning::
+  A runtime exception will be raised if a **known** variable value cannot be
+  parsed as an integer.
+
 ``LETTERS IN``
 ==============
 
 Loop over each letter in some text, storing the current letter in a variable. ::
 
-    HOWTO Say hello
     LETTERS char IN Hello
       DO Say "[char]"
     END
