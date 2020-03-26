@@ -1,0 +1,9 @@
+HOWTO Press <button>
+
+SUB ./look.scriic
+WITH [button] AS thing
+GO
+
+DO Move your finger such that it is perpendicular to the face of [button]
+DO Push your finger into [button] until your finger stops
+DO Pull your finger away from [button] until it is released
