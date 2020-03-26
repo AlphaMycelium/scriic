@@ -163,7 +163,8 @@ class FileRunner:
 
     def _set_doing(self, match):
         # Create a step and get its index
-        step = self.step.add_child(match.group(2))
+        doing = substitute_variables(match.group(2), self.variables)
+        step = self.step.add_child(*doing)
         # Set the variable to reference the result of this step
         self.variables[match.group(1)] = UnknownValue(step)
 
