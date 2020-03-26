@@ -35,7 +35,6 @@ class FileRunner:
         }
 
         self._parse()
-        print(self.lines)
 
     def _parse(self):
         """
