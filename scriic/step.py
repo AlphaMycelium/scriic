@@ -22,12 +22,25 @@ class Step:
         # This is set to the step number when it is displayed
         self.display_index = None
 
-    def __repr__(self):
-        if self.display_index is None:
-            raise UnsetDisplayIndexException(
-                'Display index not set, cannot reference step')
+    def get_display_index(self):
+        """
+        Get the display index for this step.
 
-        return f'step {self.display_index}'
+        If this step does not have a display index itself, attempt to return
+        the display index of its first child. This can recurse and have the
+        effect of selecting the display index of the first leaf node.
+
+        :raises UnsetDisplayIndexException: No display index could be found.
+        """
+        if self.display_index is not None:
+            return self.display_index
+        elif len(self.children) > 0:
+            return self.children[0].get_display_index()
+        else:
+            raise UnsetDisplayIndexException('Display index not set')
+
+    def __repr__(self):
+        return f'step {self.get_display_index()}'
 
     def text(self):
         """
