@@ -1,6 +1,6 @@
 import re
 
-from .errors import SubstitutionError
+from .errors import ScriicRuntimeException
 
 
 def substitute_variables(string, values, param_mode=False):
@@ -44,7 +44,8 @@ def substitute_variables(string, values, param_mode=False):
                 items.append(values[variable_name])
         except KeyError:
             # This is an non-existant variable
-            raise SubstitutionError(f'Variable {variable_name} does not exist')
+            raise ScriicRuntimeException(
+                f'Variable {variable_name} does not exist')
 
         prev_end = match.end()
 

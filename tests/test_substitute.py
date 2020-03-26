@@ -1,6 +1,7 @@
 import pytest
 
-from scriic.substitute import substitute_variables, SubstitutionError
+from scriic.substitute import substitute_variables
+from scriic.errors import ScriicRuntimeException
 
 
 def test_substitution():
@@ -15,5 +16,5 @@ def test_no_substitution():
 
 
 def test_invalid_variable():
-    with pytest.raises(SubstitutionError):
+    with pytest.raises(ScriicRuntimeException):
         substitute_variables('[var]', {})

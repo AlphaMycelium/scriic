@@ -4,12 +4,7 @@ import pkg_resources
 
 from .substitute import substitute_variables
 from .unknown import UnknownValue
-from .errors import (
-    ScriicSyntaxException,
-    ScriicRuntimeException,
-    MissingParamException,
-    NoReturnValueException
-)
+from .errors import ScriicSyntaxException, ScriicRuntimeException
 from .step import Step
 
 
@@ -101,7 +96,7 @@ class FileRunner:
 
         # Check for unfinished SUBs
         if self.sub_runner is not None:
-            raise ScriicSyntaxException('Unfinished SUB')
+            raise ScriicRuntimeException('Unfinished SUB')
 
         self.step.returned = self.return_value
         return self.step
@@ -120,7 +115,7 @@ class FileRunner:
         if return_var:
             if step.returned is None:
                 # We expected the subscriic to have returned something
-                raise NoReturnValueException(
+                raise ScriicRuntimeException(
                     f'{self.sub_runner.file_path} did not return a value')
 
             self.variables[return_var] = step.returned
@@ -170,7 +165,7 @@ class FileRunner:
 
     def _go(self, match):
         if self.sub_runner is None:
-            raise ScriicSyntaxException('Unexpected GO')
+            raise ScriicRuntimeException('Unexpected GO')
 
         self._run_subscriic(self.sub_params, self.return_var)
 

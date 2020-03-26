@@ -1,12 +1,7 @@
 import pytest
 
 from scriic.run import FileRunner
-from scriic.errors import (
-    ScriicSyntaxException,
-    ScriicRuntimeException,
-    NoReturnValueException
-)
-
+from scriic.errors import ScriicSyntaxException, ScriicRuntimeException
 
 class TestMetadata:
     def test_howto(self, tmp_path):
@@ -220,7 +215,7 @@ class TestSub:
         """.strip())
 
         runner = FileRunner(tmp_file_1.absolute())
-        with pytest.raises(NoReturnValueException):
+        with pytest.raises(ScriicRuntimeException):
             runner.run()
 
     def test_unexpected_go(self, tmp_path):
@@ -231,7 +226,7 @@ class TestSub:
         """.strip())
 
         runner = FileRunner(tmp_file.absolute())
-        with pytest.raises(ScriicSyntaxException):
+        with pytest.raises(ScriicRuntimeException):
             runner.run()
 
     def test_unexpected_go(self, tmp_path):
@@ -271,7 +266,7 @@ class TestSub:
         """.strip())
 
         runner = FileRunner(tmp_file_1.absolute())
-        with pytest.raises(ScriicSyntaxException):
+        with pytest.raises(ScriicRuntimeException):
             runner.run()
 
     def test_sub_nonexistant_file(self, tmp_path):
