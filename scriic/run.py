@@ -100,7 +100,7 @@ class FileRunner:
         # Check that all parameters have been set
         for param in self.params:
             if param not in self.variables:
-                raise MissingParamException(
+                raise ScriicRuntimeException(
                     f'{self.file_path} is missing parameter {param}')
 
         # Run the script
