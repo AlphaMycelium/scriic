@@ -153,10 +153,6 @@ Loop over each letter in some text, storing the current letter in a variable. ::
       DO Say "[char]"
     END
 
-.. warning::
-  ``LETTERS IN`` does not currently work with unknown values (originating
-  from ``SET DOING``).
-
 ``END``
 =======
 
