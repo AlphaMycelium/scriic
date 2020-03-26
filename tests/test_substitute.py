@@ -21,10 +21,10 @@ def test_quotation_marks():
 
 
 def test_no_quotation_marks_on_unknown():
-    from scriic.unknown import UnknownValue
+    from scriic.value import UnknownValue
     from scriic.step import Step
 
-    step = Step()
+    step = Step('text')
     step.display_index = 1
     unknown = UnknownValue(step)
 

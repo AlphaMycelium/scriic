@@ -3,7 +3,7 @@ import re
 import pkg_resources
 
 from .substitute import substitute_variables
-from .unknown import UnknownValue
+from .value import Value, UnknownValue
 from .errors import ScriicSyntaxException, ScriicRuntimeException
 from .step import Step
 
@@ -112,7 +112,7 @@ class FileRunner:
                     f'{self.file_path} is missing parameter {param}')
 
         # Run the script
-        self.step = Step(*substitute_variables(self.title, params, True))
+        self.step = Step(substitute_variables(self.title, params, True))
 
         self.current_line = 0
         while self.current_line < len(self.lines):
@@ -137,6 +137,20 @@ class FileRunner:
         self.step.returned = self.return_value
         return self.step
 
+    def _set_variable(self, name, value):
+        """
+        Set the given variable to the given value.
+
+        If the value is not an instance of Value, it will be converted to one.
+
+        :param name: Name of the variable to set.
+        :param value: Value to set.
+        """
+        if type(value) != Value:
+            value = Value(value)
+
+        self.variables[name] = value
+
     def _run_subscriic(self, params, return_var=None):
         """
         Run self.sub_runner with the given parameters.
@@ -154,19 +168,19 @@ class FileRunner:
                 raise ScriicRuntimeException(
                     f'{self.sub_runner.file_path} did not return a value')
 
-            self.variables[return_var] = step.returned
+            self._set_variable(return_var, step.returned)
 
     # COMMANDS BEGIN HERE #
     def _do(self, match):
         text = substitute_variables(match.group(1), self.variables)
-        self.step.add_child(*text)
+        self.step.add_child(text)
 
     def _set_doing(self, match):
         # Create a step and get its index
-        doing = substitute_variables(match.group(2), self.variables)
-        step = self.step.add_child(*doing)
+        text = substitute_variables(match.group(2), self.variables)
+        step = self.step.add_child(text)
         # Set the variable to reference the result of this step
-        self.variables[match.group(1)] = UnknownValue(step)
+        self._set_variable(match.group(1), UnknownValue(step))
 
     def _sub(self, match):
         if self.sub_runner is not None:
@@ -218,7 +232,7 @@ class FileRunner:
     def _repeat(self, match):
         if match.group(2):
             # Literal value
-            times = match.group(2)
+            times = Value(match.group(2))
         else:
             # Variable name
             try:
@@ -227,19 +241,18 @@ class FileRunner:
                 raise ScriicRuntimeException(
                     f'{self.file_path}: Invalid variable for REPEAT')
 
-            if type(times) == list:
-                if len(times) > 1:
-                    raise ScriicRuntimeException(
-                        f'Cannot parse {times} as a number of times for REPEAT')
-                times = times[0]
+            if len(times) > 1:
+                # The value has more than the single number we are looking for
+                raise ScriicRuntimeException(
+                    f'Cannot parse {times} as a number of times for REPEAT')
 
-        if type(times) == UnknownValue:
+        if times.is_unknown():
             # We cannot just repeat the instructions because we do not know
             # an exact amount of times
-            self._repeat_unknown(times)
+            self._repeat_unknown(times[0])
         else:
             try:
-                times = int(times)
+                times = int(times[0])
             except ValueError:
                 raise ScriicRuntimeException(
                     f'Cannot parse {times} as a number of times for REPEAT')
@@ -272,10 +285,10 @@ class FileRunner:
                 return_step = self.step.children[goto_index]
 
                 # Add a step telling the user to go back to it
-                self.step.add_child(
+                self.step.add_child(Value(
                     'Go to ', return_step,
                     ' and repeat the number of times from ', times.step
-                )
+                ))
 
             # If we don't have a step then the loop is empty
 
@@ -286,22 +299,21 @@ class FileRunner:
         var = match.group(1)
         substitution = substitute_variables(match.group(2), self.variables)
 
-        if any([type(x) == UnknownValue for x in substitution]):
+        if substitution.is_unknown():
             # TODO: Support LETTERS IN with unknown values
             raise ScriicRuntimeException(
                 'LETTERS IN cannot currently be used with unknown values.')
         else:
             # We know the exact value of the string
             # Repeat the instructions directly
-            string = ''.join([str(x) for x in substitution])
-            self._letters_known(var, string)
+            self._letters_known(var, str(substitution))
 
     def _letters_known(self, var, string):
         """LETTERS IN for a string we know the exact value of."""
         block_start = self.current_line + 1
 
         i = 0
-        self.variables[var] = string[0]
+        self._set_variable(var, string[0])
 
         def loop():
             nonlocal i
@@ -311,7 +323,7 @@ class FileRunner:
                 self.open_blocks.pop(-1)
                 return
 
-            self.variables[var] = string[i]
+            self._set_variable(var, string[i])
             # Loop back to the beginning of the block
             return block_start
         self.open_blocks.append(loop)

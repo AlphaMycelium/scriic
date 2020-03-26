@@ -1,12 +1,13 @@
 from .errors import UnsetDisplayIndexException
+from .value import Value
 
 
 class Step:
     """
     A tree node which represents an instruction.
 
-    :param text_elements: Text, values and UnknownValues to concatenate
-        together when this step is displayed.
+    :param text: Either a Value instance, or a single object which will be
+        converted to Value.
 
     :var children: List of child steps.
     :var display_index:
@@ -15,8 +16,11 @@ class Step:
         back to this step.
     """
 
-    def __init__(self, *text_elements):
-        self.text_elements = text_elements
+    def __init__(self, text):
+        if type(text) != Value:
+            text = Value(text)
+
+        self.text_value = text
         self.children = list()
 
         # This is set to the step number when it is displayed
@@ -43,17 +47,8 @@ class Step:
         return f'step {self.get_display_index()}'
 
     def text(self):
-        """
-        Return the concatenated text of this step.
-
-        :raises UnsetDisplayIndexException:
-            This step needs to reference a previous step which has not yet been
-            marked as displayed.
-        """
-        text = str()
-        for element in self.text_elements:
-            text += str(element)
-        return text
+        """Return the static text of this step."""
+        return str(self.text_value)
 
     def add_child(self, *args, **kwargs):
         """

@@ -1,12 +1,12 @@
 import re
 
 from .errors import ScriicRuntimeException
-from .unknown import UnknownValue
+from .value import Value, UnknownValue
 
 
 def substitute_variables(string, values, param_mode=False):
     """
-    Substitute variable values into a string.
+    Substitute variable values into a string and return a Value.
 
     Variable names surrounded in [square] or <angle> brackets (depending on
     ``param_mode``) will be replaced with their value from the given dictionary.
@@ -20,13 +20,13 @@ def substitute_variables(string, values, param_mode=False):
     keep updating until the text is concatenated using :meth:`Step.text`.
 
     :param string: String to substitute values into.
-    :param values: Dictionary of variable names and values.
+    :param values: Dictionary of variable names and Values.
     :param param_mode: Set to True to use angle brackets instead of square.
-    :returns: List containing strings and the substituted values.
+    :returns: Value instance with substitutions made.
     :raises ScriicRuntimeException:
         An invalid variable is referenced in the string.
     """
-    items = list()
+    value = Value()
 
     iter = re.finditer(r'\[([a-zA-Z_]\w*?)(")?\]', string)
     if param_mode:
@@ -37,7 +37,7 @@ def substitute_variables(string, values, param_mode=False):
         # Add the string from between this match and the previous one
         split_string = string[prev_end:match.start()]
         if len(split_string) > 0:
-            items.append(split_string)
+            value.append(split_string)
 
         variable_name = match.group(1)
         if variable_name not in values:
@@ -51,22 +51,20 @@ def substitute_variables(string, values, param_mode=False):
             has_quotation = False
 
         if has_quotation:
-            items.append('"')
+            value.append('"')
 
-        if type(values[variable_name]) == list:
-            # The parameter has been substituted into before,
-            # extend our list with its items to avoid having sub-lists
-            items.extend(values[variable_name])
+        if type(values[variable_name]) == Value:
+            value.extend(values[variable_name])
         else:
-            items.append(values[variable_name])
+            value.append(values[variable_name])
 
         if has_quotation:
-            items.append('"')
+            value.append('"')
 
         prev_end = match.end()
 
     split_string = string[prev_end:]
     if len(split_string) > 0:
-        items.append(split_string)
+        value.append(split_string)
 
-    return items
+    return value
