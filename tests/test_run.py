@@ -3,6 +3,7 @@ import pytest
 from scriic.run import FileRunner
 from scriic.errors import (
     ScriicSyntaxException,
+    ScriicRuntimeException,
     NoReturnValueException
 )
 
@@ -231,6 +232,30 @@ class TestSub:
 
         runner = FileRunner(tmp_file.absolute())
         with pytest.raises(ScriicSyntaxException):
+            runner.run()
+
+    def test_unexpected_go(self, tmp_path):
+        tmp_file_1 = tmp_path / 'test1.scriic'
+        tmp_file_1.write_text("""
+            HOWTO Test scriic
+            SUB ./test2.scriic
+            WITH ABC AS param
+            SUB ./test3.scriic
+            GO
+        """.strip())
+
+        tmp_file_2 = tmp_path / 'test2.scriic'
+        tmp_file_2.write_text("""
+            HOWTO Test scriic 2 with <param>
+        """.strip())
+
+        tmp_file_3 = tmp_path / 'test3.scriic'
+        tmp_file_3.write_text("""
+            HOWTO Test scriic 3
+        """.strip())
+
+        runner = FileRunner(tmp_file_1.absolute())
+        with pytest.raises(ScriicRuntimeException):
             runner.run()
 
     def test_unfinished_sub(self, tmp_path):

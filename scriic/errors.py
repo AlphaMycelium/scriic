@@ -7,6 +7,11 @@ class ScriicSyntaxException(ScriicException):
     pass
 
 
+class ScriicRuntimeException(ScriicException):
+    """Raised when a problem is encountered during running a Scriic file."""
+    pass
+
+
 class UnsetDisplayIndexException(ScriicException):
     """Raised when a step is referenced which has not yet been displayed."""
     pass

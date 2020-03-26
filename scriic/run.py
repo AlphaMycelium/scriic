@@ -6,6 +6,7 @@ from .substitute import substitute_variables
 from .unknown import UnknownValue
 from .errors import (
     ScriicSyntaxException,
+    ScriicRuntimeException,
     MissingParamException,
     NoReturnValueException
 )
@@ -136,6 +137,10 @@ class FileRunner:
         self.variables[match.group(1)] = UnknownValue(step)
 
     def _sub(self, match):
+        if self.sub_runner is not None:
+            raise ScriicRuntimeException(
+                f'{self.file_path}: SUB before GO of previous SUB')
+
         package_name = match.group(2)
         file_path = match.group(3)
         return_var = match.group(5)
