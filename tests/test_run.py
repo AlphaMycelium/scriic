@@ -35,6 +35,16 @@ class TestMetadata:
         runner = FileRunner(tmp_file.absolute())
         assert runner.title == 'Title 2'
 
+    def test_quoted_param(self, tmp_path):
+        tmp_file = tmp_path / 'test.scriic'
+        tmp_file.write_text("""
+            HOWTO Read <book_title">
+        """.strip())
+
+        runner = FileRunner(tmp_file.absolute())
+        assert runner.title == 'Read <book_title">'
+        assert runner.params == ['book_title']
+
 
 class TestRun:
     def test_invalid_syntax(self, tmp_path):

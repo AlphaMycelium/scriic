@@ -26,6 +26,13 @@ made.
   than one will cause the last defined value to be used. Variable values cannot
   be substituted into the title under any circumstances.
 
+Place a ``"`` after the name of a parameter to enclose it in quotation marks::
+
+  HOWTO Read <book_title">
+
+The quotation marks will be omitted under certain circumstances, such as if
+the value of the parameter is unknown (e.g. "the result of step 1").
+
 ``DO``
 ======
 
@@ -40,6 +47,10 @@ need. Each instruction should normally only be a single sentence.
 Variables can be substituted in by surrounding them in square brackets::
 
     DO Multiply the numbers [num_one] and [num_two].
+
+.. note::
+  Similarly to in ``HOWTO``, you may place a ``"`` after the name of a variable
+  to enclose it in quotation marks.
 
 ``SET DOING``
 =============

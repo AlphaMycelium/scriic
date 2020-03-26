@@ -60,7 +60,7 @@ class FileRunner:
 
         # Create list of required parameters based on the title
         self.params = list()
-        for param in re.finditer(r'<([a-zA-Z_]\w*?)>', self.title):
+        for param in re.finditer(r'<([a-zA-Z_]\w*?)"?>', self.title):
             self.params.append(param.group(1))
 
     def _parse_line(self, line):

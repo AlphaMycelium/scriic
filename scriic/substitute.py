@@ -1,6 +1,7 @@
 import re
 
 from .errors import ScriicRuntimeException
+from .unknown import UnknownValue
 
 
 def substitute_variables(string, values, param_mode=False):
@@ -9,6 +10,10 @@ def substitute_variables(string, values, param_mode=False):
 
     Variable names surrounded in [square] or <angle> brackets (depending on
     ``param_mode``) will be replaced with their value from the given dictionary.
+
+    Placing a ``"`` symbol inside the brackets and after the variable name will
+    cause it to be surrounded with quotation marks, unless the variable has an
+    unknown value.
 
     The result is returned as a list which contains the values and the strings
     in between them, to allow references to live objects such as other steps to
@@ -23,9 +28,9 @@ def substitute_variables(string, values, param_mode=False):
     """
     items = list()
 
-    iter = re.finditer(r'\[([a-zA-Z_]\w*?)\]', string)
+    iter = re.finditer(r'\[([a-zA-Z_]\w*?)(")?\]', string)
     if param_mode:
-        iter = re.finditer(r'<([a-zA-Z_]\w*?)>', string)
+        iter = re.finditer(r'<([a-zA-Z_]\w*?)(")?>', string)
 
     prev_end = 0
     for match in iter:
@@ -35,17 +40,28 @@ def substitute_variables(string, values, param_mode=False):
             items.append(split_string)
 
         variable_name = match.group(1)
-        try:
-            if type(values[variable_name]) == list:
-                # The parameter has been substituted into before,
-                # extend our list with its items to avoid having sub-lists
-                items.extend(values[variable_name])
-            else:
-                items.append(values[variable_name])
-        except KeyError:
+        if variable_name not in values:
             # This is an non-existant variable
             raise ScriicRuntimeException(
                 f'Variable {variable_name} does not exist')
+
+        # Check if we need to add quotation marks
+        has_quotation = match.group(2) is not None
+        if type(values[variable_name]) == UnknownValue:
+            has_quotation = False
+
+        if has_quotation:
+            items.append('"')
+
+        if type(values[variable_name]) == list:
+            # The parameter has been substituted into before,
+            # extend our list with its items to avoid having sub-lists
+            items.extend(values[variable_name])
+        else:
+            items.append(values[variable_name])
+
+        if has_quotation:
+            items.append('"')
 
         prev_end = match.end()
 
