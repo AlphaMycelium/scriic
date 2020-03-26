@@ -226,6 +226,12 @@ class FileRunner:
                 raise ScriicRuntimeException(
                     f'{self.file_path}: Invalid variable for REPEAT')
 
+            if type(times) == list:
+                if len(times) > 1:
+                    raise ScriicRuntimeException(
+                        f'Cannot parse {times} as a number of times for REPEAT')
+                times = times[0]
+
         if type(times) == UnknownValue:
             # We cannot just repeat the instructions because we do not know
             # an exact amount of times
