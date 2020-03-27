@@ -14,6 +14,13 @@ The scope of your commit should be:
 It is safe to leave the scope blank if you are changing many areas or
 something not listed above, please use your common sense.
 
+## Scriicsics
+
+If you are making a breaking change to one of the Scriicsics files, please copy
+it into a new file for the new version, e.g. `sayV2.scriic`, instead of marking
+your commit as a breaking change. This will prevent lots of major releases of
+the full project being made for small Scriicsics changes.
+
 
 [psr]: https://github.com/relekang/python-semantic-release/
 [angular-commits]: https://github.com/angular/angular/blob/master/CONTRIBUTING.md#-commit-message-guidelines
