@@ -1,0 +1,6 @@
+HOWTO Say <text"> in <language>
+
+LETTERS char IN [text]
+  SET pronunciation DOING Recall the muscle movements required to pronounce [char"] in [language]
+  DO Execute [pronunciation]
+END
