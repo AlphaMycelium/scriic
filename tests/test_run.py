@@ -95,11 +95,11 @@ class TestRun:
 
         assert step.children[0].text() == 'Test scriic!'
 
-    def test_set(self, tmp_path):
+    def test_do_with_variable(self, tmp_path):
         tmp_file = tmp_path / 'test.scriic'
         tmp_file.write_text("""
             HOWTO Test scriic
-            SET var DOING Get some value
+            var = DO Get some value
             DO Read [var]
         """.strip())
 
@@ -167,7 +167,7 @@ class TestSub:
         tmp_file_1 = tmp_path / 'test1.scriic'
         tmp_file_1.write_text("""
             HOWTO Test scriic
-            SUB ./test2.scriic INTO val
+            val = SUB ./test2.scriic
             DO Subscriic returned [val]
         """.strip())
 
@@ -189,7 +189,7 @@ class TestSub:
         tmp_file_1 = tmp_path / 'test1.scriic'
         tmp_file_1.write_text("""
             HOWTO Test scriic
-            SUB ./test2.scriic INTO val
+            val = SUB ./test2.scriic
             WITH ABC AS param
             GO
             DO Subscriic returned [val]
@@ -215,7 +215,7 @@ class TestSub:
         tmp_file_1 = tmp_path / 'test1.scriic'
         tmp_file_1.write_text("""
             HOWTO Test scriic
-            SUB ./test2.scriic INTO val
+            val = SUB ./test2.scriic
         """.strip())
 
         tmp_file_2 = tmp_path / 'test2.scriic'
@@ -312,7 +312,7 @@ class TestLoop:
         tmp_file = tmp_path / 'test.scriic'
         tmp_file.write_text("""
             HOWTO Test scriic
-            SET times DOING Get a number
+            times = DO Get a number
             REPEAT times
                 DO Something
             END
@@ -333,7 +333,7 @@ class TestLoop:
         tmp_file = tmp_path / 'test.scriic'
         tmp_file.write_text("""
             HOWTO Test scriic
-            LETTERS char IN Hello
+            char = LETTERS Hello
                 DO [char]
             END
         """.strip())
@@ -345,12 +345,28 @@ class TestLoop:
         for i, char in enumerate('Hello'):
             assert step.children[i].text() == char
 
+    def test_letters_no_var(self, tmp_path):
+        tmp_file = tmp_path / 'test.scriic'
+        tmp_file.write_text("""
+            HOWTO Test scriic
+            LETTERS Hello
+                DO Something
+            END
+        """.strip())
+
+        runner = FileRunner(tmp_file.absolute())
+        step = runner.run()
+
+        assert len(step.children) == 5
+        for i in range(5):
+            assert step.children[i].text() == 'Something'
+
     def test_unknown_letters(self, tmp_path):
         tmp_file = tmp_path / 'test.scriic'
         tmp_file.write_text("""
             HOWTO Test scriic
-            SET string DOING Get a string
-            LETTERS char IN [string]
+            string = DO Get a string
+            char = LETTERS [string]
                 DO Say [char"]
             END
         """.strip())

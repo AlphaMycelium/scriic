@@ -52,14 +52,10 @@ Variables can be substituted in by surrounding them in square brackets::
   Similarly to in ``HOWTO``, you may place a ``"`` after the name of a variable
   to enclose it in quotation marks.
 
-``SET DOING``
-=============
+``DO`` can also be used to ask the user to measure, observe or calculate a
+value, and then store that value in a variable for later use::
 
-This is a more advanced instruction which allows you to ask the user to
-measure, observe or calculate a value, and then store that value in a variable
-for later use. ::
-
-    SET filling DOING Choose your favourite filling of sandwich.
+    filling = DO Choose your favourite filling of sandwich.
 
 ``SUB``
 =======
@@ -74,19 +70,16 @@ Python package (installed via ``pip``)::
 
     SUB some_package:switch_light_on.scriic
 
-``SUB INTO``
-------------
-
-Adding ``INTO`` after ``SUB`` allows you to receive a returned value from the
+Adding a variable assignment allows you to receive a returned value from the
 subscriic::
 
-    SUB ./toggle_light.scriic INTO is_light_on
+    is_light_on = SUB ./toggle_light.scriic
 
 ``RETURN``
 ==========
 
-This sets the value to return when this scriic is called using ``SUB INTO``.
-It does not actually end the execution. ::
+This sets the value to return if this Scriic is called via ``SUB``. It does not
+cause the execution to end. ::
 
     RETURN Some [value]
 
@@ -133,9 +126,9 @@ Repeat for a certain number of times::
       DO Something
     END
 
-You can also use an amount from a variable name::
+You can also use an amount from a variable::
 
-    SET times DOING Get a number of times to repeat
+    times = DO Get a number of times to repeat
     REPEAT times
       DO Something
     END
@@ -144,14 +137,19 @@ You can also use an amount from a variable name::
   A runtime exception will be raised if a **known** variable value cannot be
   parsed as an integer.
 
-``LETTERS IN``
-==============
+``LETTERS``
+===========
 
-Loop over each letter in some text, storing the current letter in a variable. ::
+Loop over each letter in some text, storing the current letter in a variable.
+::
 
-    LETTERS char IN Hello
+    char = LETTERS Hello
       DO Say "[char]"
     END
+
+.. note::
+  If you don't need to know the current letter, you may omit the ``variable =``
+  before the command.
 
 ``END``
 =======

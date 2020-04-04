@@ -23,13 +23,12 @@ class FileRunner:
         self.dir_path = os.path.dirname(file_path)
 
         self.commands = {
-            r'DO (.+)': self._do,
-            r'SET ([a-zA-Z_]\w*) DOING (.+)': self._set_doing,
-            r'SUB (([a-zA-Z_]\w*):)?(\S+)( INTO ([a-zA-Z_]\w*))?': self._sub,
+            r'(([a-zA-Z_]\w*) = )?DO (.+)': self._do,
+            r'(([a-zA-Z_]\w*) = )?SUB (([a-zA-Z_]\w*):)?(\S+)': self._sub,
             r'WITH (.+) AS ([a-zA-Z_]\w*)': self._with_as,
             r'GO': self._go,
             r'RETURN (.+)': self._return,
-            r'LETTERS ([a-zA-Z_]\w*) IN (.+)': self._letters_in,
+            r'(([a-zA-Z_]\w*) = )?LETTERS (.+)': self._letters,
             r'REPEAT ((\d+)|([a-zA-Z_]\w*))': self._repeat,
             r'END': self._end
         }
@@ -172,24 +171,21 @@ class FileRunner:
 
     # COMMANDS BEGIN HERE #
     def _do(self, match):
-        text = substitute_variables(match.group(1), self.variables)
-        self.step.add_child(text)
-
-    def _set_doing(self, match):
-        # Create a step and get its index
-        text = substitute_variables(match.group(2), self.variables)
+        text = substitute_variables(match.group(3), self.variables)
         step = self.step.add_child(text)
-        # Set the variable to reference the result of this step
-        self._set_variable(match.group(1), UnknownValue(step))
+
+        if match.group(2):
+            # Add result to variable
+            self._set_variable(match.group(2), UnknownValue(step))
 
     def _sub(self, match):
         if self.sub_runner is not None:
             raise ScriicRuntimeException(
                 f'{self.file_path}: SUB before GO of previous SUB')
 
-        package_name = match.group(2)
-        file_path = match.group(3)
-        return_var = match.group(5)
+        package_name = match.group(4)
+        file_path = match.group(5)
+        return_var = match.group(2)
 
         if package_name is not None:
             # Look for file inside a Python package
@@ -295,9 +291,9 @@ class FileRunner:
             self.open_blocks.pop(-1)
         self.open_blocks.append(add_repeat_step)
 
-    def _letters_in(self, match):
-        var = match.group(1)
-        substitution = substitute_variables(match.group(2), self.variables)
+    def _letters(self, match):
+        var = match.group(2)
+        substitution = substitute_variables(match.group(3), self.variables)
 
         if substitution.is_unknown():
             # We don't know the exact value of the string
@@ -309,11 +305,12 @@ class FileRunner:
             self._letters_known(var, str(substitution))
 
     def _letters_known(self, var, string):
-        """LETTERS IN for a string we know the exact value of."""
+        """LETTERS for a string we know the exact value of."""
         block_start = self.current_line + 1
 
         i = 0
-        self._set_variable(var, string[0])
+        if var is not None:
+            self._set_variable(var, string[0])
 
         def loop():
             nonlocal i
@@ -323,18 +320,21 @@ class FileRunner:
                 self.open_blocks.pop(-1)
                 return
 
-            self._set_variable(var, string[i])
+            if var is not None:
+                self._set_variable(var, string[i])
+
             # Loop back to the beginning of the block
             return block_start
         self.open_blocks.append(loop)
 
     def _letters_unknown(self, var, string):
-        """LETTERS IN for an unknown string."""
+        """LETTERS for an unknown string."""
         goto_step = self.step.add_child(Value(
             'Get the first letter of ', string, ', or the next letter '
             'if you are returning from a future step'
         ))
-        self._set_variable(var, UnknownValue(goto_step))
+        if var is not None:
+            self._set_variable(var, UnknownValue(goto_step))
 
         def add_repeat_step():
             self.step.add_child(Value(
