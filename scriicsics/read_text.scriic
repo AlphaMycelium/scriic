@@ -1,6 +1,6 @@
 HOWTO Read <text"> from <location>
 
-LETTERS char IN [text]
+char = LETTERS [text]
   SUB ./look.scriic
   WITH the character [char"] on [location] AS thing
   GO

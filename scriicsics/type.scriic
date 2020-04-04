@@ -1,11 +1,11 @@
 HOWTO Type <text"> on <keyboard>
 
-LETTERS char IN [text]
+char = LETTERS [text]
   SUB ./look.scriic
   WITH [keyboard] AS thing
   GO
 
-  SET key DOING Find the key on [keyboard] which displays [char"]
+  key = DO Find the key on [keyboard] which displays [char"]
 
   SUB ./press_button.scriic
   WITH [key] AS button
