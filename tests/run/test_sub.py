@@ -35,7 +35,7 @@ def test_sub_param(tmp_path):
         DO This is in file 1
 
         SUB ./test2.scriic
-        WITH [param] AS param
+        PRM param = [param]
         GO
     """.strip())
 
@@ -83,7 +83,7 @@ def test_sub_param_and_return(tmp_path):
     tmp_file_1.write_text("""
         HOWTO Test scriic
         val = SUB ./test2.scriic
-        WITH ABC AS param
+        PRM param = ABC
         GO
         DO Subscriic returned [val]
     """.strip())
@@ -140,7 +140,7 @@ def test_unexpected_sub(tmp_path):
     tmp_file_1.write_text("""
         HOWTO Test scriic
         SUB ./test2.scriic
-        WITH ABC AS param
+        PRM param = ABC
         SUB ./test3.scriic
         GO
     """.strip())

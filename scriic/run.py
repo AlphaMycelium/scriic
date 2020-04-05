@@ -25,8 +25,8 @@ class FileRunner:
         self.commands = {
             r'(([a-zA-Z_]\w*) = )?DO (.+)': self._do,
             r'(([a-zA-Z_]\w*) = )?SUB (([a-zA-Z_]\w*):)?(\S+)': self._sub,
-            r'WITH (.+) AS ([a-zA-Z_]\w*)': self._with_as,
-            r'GO': self._go,
+            r'PRM ([a-zA-Z_]\w*) = (.+)': self._sub_param,
+            r'GO': self._sub_go,
             r'RETURN (.+)': self._return,
             r'(([a-zA-Z_]\w*) = )?LETTERS (.+)': self._letters,
             r'REPEAT ((\d+)|([a-zA-Z_]\w*))': self._repeat,
@@ -206,11 +206,11 @@ class FileRunner:
             self.sub_params = dict()
             self.return_var = return_var
 
-    def _with_as(self, match):
-        param = substitute_variables(match.group(1), self.variables)
-        self.sub_params[match.group(2)] = param
+    def _sub_param(self, match):
+        param = substitute_variables(match.group(2), self.variables)
+        self.sub_params[match.group(1)] = param
 
-    def _go(self, match):
+    def _sub_go(self, match):
         if self.sub_runner is None:
             raise ScriicRuntimeException('Unexpected GO')
 

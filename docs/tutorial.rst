@@ -58,11 +58,11 @@ on its own, or to re-use in other Scriics.
     SUB ./subscriic.scriic
 
 If the subscriic takes parameters, you need to give them on the lines below
-using :ref:`WITH_AS` instructions::
+using :ref:`PRM` ("parameter") instructions::
 
     SUB ./subscriic.scriic
-    WITH Foo AS parameter1
-    WITH [bar] AS parameter2
+    PRM parameter1 = Foo
+    PRM parameter2 = [bar]
     GO
 
 You can substitute variables into the parameter input, too!

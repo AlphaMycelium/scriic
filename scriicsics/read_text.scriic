@@ -2,7 +2,7 @@ HOWTO Read <text"> from <location>
 
 char = LETTERS [text]
   SUB ./look.scriic
-  WITH the character [char"] on [location] AS thing
+  PRM thing = the character [char"] on [location]
   GO
   DO Remember the character [char"] on [location] in your short-term memory
 END

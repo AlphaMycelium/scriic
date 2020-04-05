@@ -96,27 +96,27 @@ not cause the execution to end. ::
 .. note::
   A second ``RETURN`` statement will overwrite the previous value.
 
-.. _WITH_AS:
+.. _PRM:
 
-``WITH AS``
-===========
+``PRM``
+=======
 
 This is used after :ref:`SUB` to pass in any required parameters::
 
     SUB ./switch_light_on.scriic
-    WITH the main light switch AS switch
+    PRM switch = the main light switch
     GO
 
 The same variable substitution rules as :ref:`DO` apply to the input::
 
     SUB ./add_filling_to_sandwich.scriic
-    WITH [filling] AS filling
-    WITH the slice of bread which was placed onto [surface] AS bread
+    PRM filling = [filling]
+    PRM bread = the slice of bread which was placed onto [surface]
     GO
 
 .. note::
-  If you call :ref:`WITH_AS` twice for the same parameter, it will be
-  overwritten with the most recent value.
+  If you call :ref:`PRM` twice for the same parameter, it will be overwritten
+  with the most recent value.
 
 .. _GO:
 
@@ -124,7 +124,7 @@ The same variable substitution rules as :ref:`DO` apply to the input::
 ------
 
 This very simple command commits the parameters you have specified using
-:ref:`WITH_AS` and launches the subscriic.
+:ref:`PRM` and launches the subscriic.
 
 
 .. note::
