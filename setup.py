@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 from os import path
 
 
-__version__ = '1.0.0'
+__version__ = '2.0.0'
 
 
 # Read long description from README.md
