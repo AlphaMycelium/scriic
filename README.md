@@ -17,13 +17,13 @@ HOWTO Type <text"> using <keyboard>
 
 char = LETTERS [text]
   SUB ./look.scriic
-  WITH [keyboard] AS thing
+  PRM thing = [keyboard]
   GO
 
   key = DO Find the key on [keyboard] which displays [char"]
 
   SUB ./press_button.scriic
-  WITH [key] AS button
+  PRM button = [key]
   GO
 END
 ```
