@@ -41,10 +41,10 @@ class Step:
         elif len(self.children) > 0:
             return self.children[0].get_display_index()
         else:
-            raise UnsetDisplayIndexException('Display index not set')
+            raise UnsetDisplayIndexException("Display index not set")
 
     def __repr__(self):
-        return f'step {self.get_display_index()}'
+        return f"step {self.get_display_index()}"
 
     def text(self):
         """Return the static text of this step."""

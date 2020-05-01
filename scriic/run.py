@@ -1,11 +1,12 @@
 import os.path
 import re
+
 import pkg_resources
 
-from .substitute import substitute_variables
-from .value import Value, UnknownValue
-from .errors import ScriicSyntaxException, ScriicRuntimeException
+from .errors import ScriicRuntimeException, ScriicSyntaxException
 from .step import Step
+from .substitute import substitute_variables
+from .value import UnknownValue, Value
 
 
 class FileRunner:
@@ -23,14 +24,14 @@ class FileRunner:
         self.dir_path = os.path.dirname(file_path)
 
         self.commands = {
-            r'(([a-zA-Z_]\w*) = )?DO (.+)': self._do,
-            r'(([a-zA-Z_]\w*) = )?SUB (([a-zA-Z_]\w*):)?(\S+)': self._sub,
-            r'PRM ([a-zA-Z_]\w*) = (.+)': self._sub_param,
-            r'GO': self._sub_go,
-            r'RETURN (.+)': self._return,
-            r'(([a-zA-Z_]\w*) = )?LETTERS (.+)': self._letters,
-            r'REPEAT ((\d+)|([a-zA-Z_]\w*))': self._repeat,
-            r'END': self._end
+            r"(([a-zA-Z_]\w*) = )?DO (.+)": self._do,
+            r"(([a-zA-Z_]\w*) = )?SUB (([a-zA-Z_]\w*):)?(\S+)": self._sub,
+            r"PRM ([a-zA-Z_]\w*) = (.+)": self._sub_param,
+            r"GO": self._sub_go,
+            r"RETURN (.+)": self._return,
+            r"(([a-zA-Z_]\w*) = )?LETTERS (.+)": self._letters,
+            r"REPEAT ((\d+)|([a-zA-Z_]\w*))": self._repeat,
+            r"END": self._end,
         }
 
         self._parse()
@@ -55,7 +56,7 @@ class FileRunner:
                     self.lines.append(parsed_line)
 
         if self.title is None:
-            raise ScriicSyntaxException(f'{self.file_path} has no HOWTO')
+            raise ScriicSyntaxException(f"{self.file_path} has no HOWTO")
 
         # Create list of required parameters based on the title
         self.params = list()
@@ -69,7 +70,7 @@ class FileRunner:
         :returns: Tuple of (function, regex match), or None.
         :raises ScriicSyntaxException: The line did not match any commands.
         """
-        if line.startswith('HOWTO '):
+        if line.startswith("HOWTO "):
             self.title = line[6:]
             return
 
@@ -108,7 +109,8 @@ class FileRunner:
         for param in self.params:
             if param not in self.variables:
                 raise ScriicRuntimeException(
-                    f'{self.file_path} is missing parameter {param}')
+                    f"{self.file_path} is missing parameter {param}"
+                )
 
         # Run the script
         self.step = Step(substitute_variables(self.title, params, True))
@@ -128,10 +130,10 @@ class FileRunner:
 
         # Check for unfinished SUBs
         if self.sub_runner is not None:
-            raise ScriicRuntimeException('Unfinished SUB')
+            raise ScriicRuntimeException("Unfinished SUB")
         # Check for unclosed blocks
         if len(self.open_blocks) > 0:
-            raise ScriicRuntimeException('Missing END')
+            raise ScriicRuntimeException("Missing END")
 
         self.step.returned = self.return_value
         return self.step
@@ -165,7 +167,8 @@ class FileRunner:
             if step.returned is None:
                 # We expected the subscriic to have returned something
                 raise ScriicRuntimeException(
-                    f'{self.sub_runner.file_path} did not return a value')
+                    f"{self.sub_runner.file_path} did not return a value"
+                )
 
             self._set_variable(return_var, step.returned)
 
@@ -181,7 +184,8 @@ class FileRunner:
     def _sub(self, match):
         if self.sub_runner is not None:
             raise ScriicRuntimeException(
-                f'{self.file_path}: SUB before GO of previous SUB')
+                f"{self.file_path}: SUB before GO of previous SUB"
+            )
 
         package_name = match.group(4)
         file_path = match.group(5)
@@ -212,7 +216,7 @@ class FileRunner:
 
     def _sub_go(self, match):
         if self.sub_runner is None:
-            raise ScriicRuntimeException('Unexpected GO')
+            raise ScriicRuntimeException("Unexpected GO")
 
         self._run_subscriic(self.sub_params, self.return_var)
 
@@ -222,8 +226,7 @@ class FileRunner:
         del self.return_var
 
     def _return(self, match):
-        self.return_value = substitute_variables(
-            match.group(1), self.variables)
+        self.return_value = substitute_variables(match.group(1), self.variables)
 
     def _repeat(self, match):
         if match.group(2):
@@ -235,12 +238,14 @@ class FileRunner:
                 times = self.variables[match.group(3)]
             except KeyError:
                 raise ScriicRuntimeException(
-                    f'{self.file_path}: Invalid variable for REPEAT')
+                    f"{self.file_path}: Invalid variable for REPEAT"
+                )
 
             if len(times) > 1:
                 # The value has more than the single number we are looking for
                 raise ScriicRuntimeException(
-                    f'Cannot parse {times} as a number of times for REPEAT')
+                    f"Cannot parse {times} as a number of times for REPEAT"
+                )
 
         if times.is_unknown():
             # We cannot just repeat the instructions because we do not know
@@ -251,7 +256,8 @@ class FileRunner:
                 times = int(times[0])
             except ValueError:
                 raise ScriicRuntimeException(
-                    f'Cannot parse {times} as a number of times for REPEAT')
+                    f"Cannot parse {times} as a number of times for REPEAT"
+                )
             self._repeat_known(times)
 
     def _repeat_known(self, times):
@@ -269,6 +275,7 @@ class FileRunner:
 
             # Loop back to the beginning of the block
             return block_start
+
         self.open_blocks.append(loop)
 
     def _repeat_unknown(self, times):
@@ -281,14 +288,19 @@ class FileRunner:
                 return_step = self.step.children[goto_index]
 
                 # Add a step telling the user to go back to it
-                self.step.add_child(Value(
-                    'Go to ', return_step,
-                    ' and repeat the number of times from ', times.step
-                ))
+                self.step.add_child(
+                    Value(
+                        "Go to ",
+                        return_step,
+                        " and repeat the number of times from ",
+                        times.step,
+                    )
+                )
 
             # If we don't have a step then the loop is empty
 
             self.open_blocks.pop(-1)
+
         self.open_blocks.append(add_repeat_step)
 
     def _letters(self, match):
@@ -325,28 +337,37 @@ class FileRunner:
 
             # Loop back to the beginning of the block
             return block_start
+
         self.open_blocks.append(loop)
 
     def _letters_unknown(self, var, string):
         """LETTERS for an unknown string."""
-        goto_step = self.step.add_child(Value(
-            'Get the first letter of ', string, ', or the next letter '
-            'if you are returning from a future step'
-        ))
+        goto_step = self.step.add_child(
+            Value(
+                "Get the first letter of ",
+                string,
+                ", or the next letter " "if you are returning from a future step",
+            )
+        )
         if var is not None:
             self._set_variable(var, UnknownValue(goto_step))
 
         def add_repeat_step():
-            self.step.add_child(Value(
-                'If you haven\'t yet reached the last letter of ', string,
-                ', go to ', goto_step
-            ))
+            self.step.add_child(
+                Value(
+                    "If you haven't yet reached the last letter of ",
+                    string,
+                    ", go to ",
+                    goto_step,
+                )
+            )
             self.open_blocks.pop(-1)
+
         self.open_blocks.append(add_repeat_step)
 
     def _end(self, match):
         if len(self.open_blocks) == 0:
-            raise ScriicRuntimeException(f'{self.file_path}: Unexpected END')
+            raise ScriicRuntimeException(f"{self.file_path}: Unexpected END")
 
         # Call the function registered when this block was opened
         return self.open_blocks[-1]()

@@ -1,7 +1,7 @@
 import re
 
 from .errors import ScriicRuntimeException
-from .value import Value, UnknownValue
+from .value import UnknownValue, Value
 
 
 def substitute_variables(string, values, param_mode=False):
@@ -35,21 +35,19 @@ def substitute_variables(string, values, param_mode=False):
     prev_end = 0
     for match in iter:
         # Add the string from between this match and the previous one
-        split_string = string[prev_end:match.start()]
+        split_string = string[prev_end : match.start()]
         if len(split_string) > 0:
             value.append(split_string)
 
         variable_name = match.group(1)
         if variable_name not in values:
             # This is an non-existant variable
-            raise ScriicRuntimeException(
-                f'Variable {variable_name} does not exist')
+            raise ScriicRuntimeException(f"Variable {variable_name} does not exist")
 
         # Check if we need to add quotation marks
         has_quotation = match.group(2) is not None
         if (
-            type(values[variable_name]) == Value and
-            values[variable_name].is_unknown()
+            type(values[variable_name]) == Value and values[variable_name].is_unknown()
         ) or type(values[variable_name]) == UnknownValue:
             has_quotation = False
 

@@ -9,7 +9,7 @@ class UnknownValue:
         self.step = step
 
     def __repr__(self):
-        return f'the result of {self.step}'
+        return f"the result of {self.step}"
 
 
 class Value(list):
@@ -29,12 +29,8 @@ class Value(list):
         :raises UnsetDisplayIndexException:
             A step needs to be referenced which has not yet been displayed.
         """
-        return ''.join(
-            [str(p) for p in self]
-        )
+        return "".join([str(p) for p in self])
 
     def is_unknown(self):
         """Return whether this value contains any UnknownValues."""
-        return any(
-            [type(p) == UnknownValue for p in self]
-        )
+        return any([type(p) == UnknownValue for p in self])
