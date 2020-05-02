@@ -3,4 +3,4 @@ Installation
 
 Scriic can be installed via PyPI::
 
-    pip install scriic
+    python3 -m pip install scriic
