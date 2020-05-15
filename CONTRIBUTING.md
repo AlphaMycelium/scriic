@@ -2,7 +2,7 @@
 
 ## Commit Messages
 
-Scriic is released automatically every week using [Python Semantic Release][psr].
+Scriic is released automatically using [Python Semantic Release][psr].
 Therefore, we must follow the [Angular commit style guide][angular-commits] in
 all commit messages.
 
@@ -19,7 +19,7 @@ something not listed above, please use your common sense.
 If you are making a breaking change to one of the Scriicsics files, please copy
 it into a new file for the new version, e.g. `sayV2.scriic`, instead of marking
 your commit as a breaking change. This will prevent lots of major releases of
-the full project being made for small Scriicsics changes.
+the full project being made for Scriicsics changes.
 
 
 [psr]: https://github.com/relekang/python-semantic-release/
