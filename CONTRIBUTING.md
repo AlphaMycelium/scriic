@@ -1,5 +1,11 @@
 # Contributing to Scriic
 
+*This file contains information specific to Scriic. You should also read these
+[general contributing guidelines][default-contributing].*
+
+[default-contributing]: https://github.com/AlphaMycelium/.github/blob/master/CONTRIBUTING.md
+
+
 ## Commit Messages
 
 Scriic is released automatically using [Python Semantic Release][psr].
