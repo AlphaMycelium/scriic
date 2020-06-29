@@ -9,15 +9,15 @@ def test_letters_known(tmp_path):
         char = LETTERS Hello
             DO [char]
         END
-    """.strip()
+        """
     )
 
     runner = FileRunner(tmp_file.absolute())
-    step = runner.run()
+    instruction = runner.run()
 
-    assert len(step.children) == 5
+    assert len(instruction.children) == 5
     for i, char in enumerate("Hello"):
-        assert step.children[i].text() == char
+        assert instruction.children[i].text() == char
 
 
 def test_letters_no_var(tmp_path):
@@ -28,15 +28,15 @@ def test_letters_no_var(tmp_path):
         LETTERS Hello
             DO Something
         END
-    """.strip()
+        """
     )
 
     runner = FileRunner(tmp_file.absolute())
-    step = runner.run()
+    instruction = runner.run()
 
-    assert len(step.children) == 5
+    assert len(instruction.children) == 5
     for i in range(5):
-        assert step.children[i].text() == "Something"
+        assert instruction.children[i].text() == "Something"
 
 
 def test_letters_unknown(tmp_path):
@@ -48,22 +48,22 @@ def test_letters_unknown(tmp_path):
         char = LETTERS [string]
             DO Say [char"]
         END
-    """.strip()
+        """
     )
 
     runner = FileRunner(tmp_file.absolute())
-    step = runner.run()
+    instruction = runner.run()
 
-    assert len(step.children) == 4
-    assert step.children[0].text() == "Get a string"
-    step.children[0].display_index = 1
-    assert step.children[1].text() == (
-        "Get the first letter of the result of step 1, or the next letter "
-        "if you are returning from a future step"
+    assert len(instruction.children) == 4
+    assert instruction.children[0].text() == "Get a string"
+    instruction.children[0].display_index = 1
+    assert instruction.children[1].text() == (
+        "Get the first letter of the result of instruction 1, or the next letter "
+        "if you are returning from a future instruction"
     )
-    step.children[1].display_index = 2
-    assert step.children[2].text() == "Say the result of step 2"
-    assert step.children[3].text() == (
+    instruction.children[1].display_index = 2
+    assert instruction.children[2].text() == "Say the result of instruction 2"
+    assert instruction.children[3].text() == (
         "If you haven't yet reached the last letter of the result of "
-        "step 1, go to step 2"
+        "instruction 1, go to instruction 2"
     )

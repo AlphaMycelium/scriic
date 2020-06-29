@@ -15,6 +15,6 @@ class ScriicRuntimeException(ScriicException):
 
 
 class UnsetDisplayIndexException(ScriicException):
-    """Raised when a step is referenced which has not yet been displayed."""
+    """Raised when an instruction is referenced which has not yet been displayed."""
 
     pass

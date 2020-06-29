@@ -15,16 +15,16 @@ def run(file):
 
     # Ask for parameters
     params = dict()
-    for param in runner.params:
+    for param in runner.required_parameters:
         params[param] = input(f"Parameter {param}: ")
 
     # Run the scriic
-    step = runner.run(params)
+    instruction = runner.run(params)
 
-    # Print steps
-    for i, step in enumerate(step.leaf_nodes()):
-        step.display_index = i + 1
-        print(f"{step.display_index}. {step.text()}")
+    # Print instructions
+    for i, instruction in enumerate(instruction.leaf_nodes()):
+        instruction.display_index = i + 1
+        print(f"{instruction.display_index}. {instruction.text()}")
 
 
 # This is used as an entrypoint in setup.py

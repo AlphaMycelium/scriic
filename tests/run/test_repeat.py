@@ -9,14 +9,14 @@ def test_repeat_known(tmp_path):
         REPEAT 5
             DO Something
         END
-    """.strip()
+        """
     )
 
     runner = FileRunner(tmp_file.absolute())
-    step = runner.run()
+    instruction = runner.run()
 
-    assert len(step.children) == 5
-    for child in step.children:
+    assert len(instruction.children) == 5
+    for child in instruction.children:
         assert child.text() == "Something"
 
 
@@ -29,17 +29,17 @@ def test_repeat_unknown(tmp_path):
         REPEAT times
             DO Something
         END
-    """.strip()
+        """
     )
 
     runner = FileRunner(tmp_file.absolute())
-    step = runner.run()
+    instruction = runner.run()
 
-    assert len(step.children) == 3
-    assert step.children[0].text() == "Get a number"
-    step.children[0].display_index = 1
-    assert step.children[1].text() == "Something"
-    step.children[1].display_index = 2
-    assert step.children[2].text() == (
-        "Go to step 2 and repeat the number of times from step 1"
+    assert len(instruction.children) == 3
+    assert instruction.children[0].text() == "Get a number"
+    instruction.children[0].display_index = 1
+    assert instruction.children[1].text() == "Something"
+    instruction.children[1].display_index = 2
+    assert instruction.children[2].text() == (
+        "Go to instruction 2 and repeat the number of times from instruction 1"
     )

@@ -2,36 +2,35 @@ import pytest
 
 from scriic.errors import ScriicRuntimeException
 from scriic.substitute import substitute_variables
+from scriic.parser.primitives import Substitution
+from scriic.parser.howto import Parameter
 
 
-def test_substitution():
-    assert substitute_variables("[var]", {"var": "X"}) == ["X"]
-    assert substitute_variables("XXX[var]XXX", {"var": "Y"}) == ["XXX", "Y", "XXX"]
+@pytest.mark.parametrize("s_type", [Substitution, Parameter])
+def test_substitution(s_type):
+    assert substitute_variables(
+        ["A", s_type("var", False), "C"], {"var": "B"}
+    ) == ["A", "B", "C"]
 
 
-def test_no_substitution():
-    assert substitute_variables("var", {"var": "X"}) == ["var"]
-    assert substitute_variables("[var", {"var": "X"}) == ["[var"]
-    assert substitute_variables("var]", {"var": "X"}) == ["var]"]
+@pytest.mark.parametrize("s_type", [Substitution, Parameter])
+def test_quotation_marks(s_type):
+    assert substitute_variables([s_type("x", True)], {"x": "X"}) == ['"', "X", '"']
 
 
-def test_quotation_marks():
-    assert substitute_variables('[x"]', {"x": "X"}) == ['"', "X", '"']
-    assert substitute_variables('<x">', {"x": "X"}, True) == ['"', "X", '"']
-
-
-def test_no_quotation_marks_on_unknown():
+@pytest.mark.parametrize("s_type", [Substitution, Parameter])
+def test_no_quotation_marks_on_unknown(s_type):
     from scriic.value import UnknownValue
-    from scriic.step import Step
+    from scriic.instruction import Instruction
 
-    step = Step("text")
-    step.display_index = 1
-    unknown = UnknownValue(step)
+    instruction = Instruction("text")
+    instruction.display_index = 1
+    unknown = UnknownValue(instruction)
 
-    assert substitute_variables('[x"]', {"x": unknown}) == [unknown]
-    assert substitute_variables('<x">', {"x": unknown}, True) == [unknown]
+    assert substitute_variables([s_type("x", True)], {"x": unknown}) == [unknown]
 
 
-def test_invalid_variable():
+@pytest.mark.parametrize("s_type", [Substitution, Parameter])
+def test_invalid_variable(s_type):
     with pytest.raises(ScriicRuntimeException):
-        substitute_variables("[var]", {})
+        substitute_variables([s_type("var", False)], {})
