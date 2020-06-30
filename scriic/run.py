@@ -21,7 +21,9 @@ class FileRunner:
     """
     Runner for a Scriic file.
 
-    The file will be loaded and parsed as soon as this class is constructed.
+    The file will be loaded and parsed as soon as this class is constructed, and can
+    then be executed using :meth:`FileRunner.run`. Use the ``required_parameters``
+    property to check what parameters must be passed when running.
 
     :param file_path: Path to the file to run.
     :var parameters: List of parametrs required by this Scriic.
@@ -31,50 +33,37 @@ class FileRunner:
         self.file_path = file_path
         self.dir_path = os.path.dirname(file_path)
 
-        self._parse()
-
-    def _parse(self):
-        """
-        Load and parse the file.
-
-        :raises ScriicSyntaxException: One or more lines have invalid syntax.
-        """
         with open(self.file_path) as file:
             try:
                 self.title, self.steps = parse(file.read())
             except ParseError as e:
-                raise ScriicSyntaxException(str(e)) from e
+                raise ScriicSyntaxException(self.file_path, str(e)) from e
 
-        self.required_parameters = [x.name for x in self.title if isinstance(x, Parameter)]
+        self.required_parameters = {x.name for x in self.title if isinstance(x, Parameter)}
 
     def run(self, parameters=None):
         """
-        Run the code and return generated tree of Instructions.
+        Run this file and return a tree of Instructions.
 
         :param parameters: Dictionary of parameters to pass to the script.
         :returns: Tree of instructions. The root instruction's text will be the title.
         :raises ScriicRuntimeException: A problem was encountered during execution.
         """
-        if parameters is None:
-            parameters = dict()
-
+        self.variables = parameters or dict()
         self.return_value = None
-        self.variables = dict()
 
-        # Check that all parameters have been set
-        for parameter_name in self.required_parameters:
-            try:
-                self.variables[parameter_name] = parameters[parameter_name]
-            except KeyError as e:
-                raise ScriicRuntimeException(
-                    f"{self.file_path} is missing parameter {parameter_name}"
-                ) from e
+        given_parameters = set(self.variables.keys())
+        missing_parameters = self.required_parameters.difference(given_parameters)
+        if len(missing_parameters) > 0:
+            raise ScriicRuntimeException(
+                self.file_path,
+                "Missing one or more parameters: " + ", ".join(missing_parameters)
+            )
 
-        self.instruction = Instruction(substitute_variables(self.title, self.variables))
-
+        title = substitute_variables(self.title, self.variables, self.file_path)
+        self.instruction = Instruction(title)
         for step in self.steps:
             self._run_step(step)
-
         return self.instruction
 
     def _run_step(self, step):
@@ -91,9 +80,10 @@ class FileRunner:
         elif isinstance(step, Letters):
             self._letters(step)
         elif isinstance(step, Return):
-            self.return_value = substitute_variables(step.value, self.variables)
+            self.return_value = substitute_variables(
+                step.value, self.variables, self.file_path)
         else:
-            raise ScriicRuntimeException(f"Unrecognized step: {step}")
+            raise ScriicRuntimeException(self.file_path, f"Unrecognized step: {step}")
 
     def _set_variable(self, name, value):
         """
@@ -109,7 +99,7 @@ class FileRunner:
 
     # COMMANDS BEGIN HERE #
     def _do(self, step):
-        text = substitute_variables(step.text, self.variables)
+        text = substitute_variables(step.text, self.variables, self.file_path)
         child = self.instruction.add_child(text)
 
         if step.assign_to is not None:
@@ -125,7 +115,7 @@ class FileRunner:
 
         # Build dictionary of parameters
         parameters = {
-            parameter.name: substitute_variables(parameter.value, self.variables)
+            parameter.name: substitute_variables(parameter.value, self.variables, self.file_path)
             for parameter in step.parameters
         }
         # Run the subscriic and add its resulting instruction
@@ -137,10 +127,13 @@ class FileRunner:
                 # Add return value into a variable
                 self._set_variable(step.assign_to, runner.return_value)
             else:
-                raise ScriicRuntimeException("{path} did not return a value")
+                raise ScriicRuntimeException(
+                    self.file_path,
+                    "Expecting a return value from {path}, but one was not given"
+                )
 
     def _return(self, step):
-        self.return_value = substitute_variables(step.value, self.variables)
+        self.return_value = substitute_variables(step.value, self.variables, self.file_path)
 
     def _repeat(self, step):
         if isinstance(step.times, int):
@@ -152,13 +145,14 @@ class FileRunner:
                 times = self.variables[step.times]
             except KeyError:
                 raise ScriicRuntimeException(
-                    f"{self.file_path}: Invalid variable for REPEAT"
+                    self.file_path, "Variable {step.times} does not exist"
                 )
 
             if len(times) > 1:
                 # The value has more than the single number we are looking for
                 raise ScriicRuntimeException(
-                    f"Cannot parse {times} as a number of times for REPEAT"
+                    self.file_path,
+                    f"Cannot parse {times} as a number of times to REPEAT"
                 )
 
         if times.is_unknown():
@@ -170,7 +164,8 @@ class FileRunner:
                 times = int(times[0])
             except ValueError:
                 raise ScriicRuntimeException(
-                    f"Cannot parse {times} as a number of times for REPEAT"
+                    self.file_path,
+                    f"Cannot parse {times} as a number of times to REPEAT"
                 )
             else:
                 self._repeat_known(step, times)
@@ -200,7 +195,7 @@ class FileRunner:
         )
 
     def _letters(self, step):
-        substitution = substitute_variables(step.text, self.variables)
+        substitution = substitute_variables(step.text, self.variables, self.file_path)
 
         if substitution.is_unknown():
             # We don't know the exact value of the string

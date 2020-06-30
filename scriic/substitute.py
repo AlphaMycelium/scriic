@@ -4,7 +4,7 @@ from .errors import ScriicRuntimeException
 from .value import UnknownValue, Value
 
 
-def substitute_variables(parts, variables):
+def substitute_variables(parts, variables, file_path=None):
     """
     Substitute variable values into a string and return a Value.
 
@@ -15,6 +15,8 @@ def substitute_variables(parts, variables):
 
     :param parts: List of parts to substitute values into.
     :param values: Dictionary of variable names and Values.
+    :param file_path: Path to the current program, only used if a runtime
+        exception needs to be raised.
     :returns: Value instance with substitutions made.
     :raises ScriicRuntimeException: An invalid variable is referenced in the string.
     """
@@ -28,7 +30,10 @@ def substitute_variables(parts, variables):
         try:
             variable_value = variables[part.name]
         except KeyError as e:
-            raise ScriicRuntimeException(f"Variable '{part.name}' does not exist") from e
+            raise ScriicRuntimeException(
+                file_path,
+                f"Variable {part.name} does not exist"
+            ) from e
 
         # Add quotes if necessary
         quoted = part.quoted and not (

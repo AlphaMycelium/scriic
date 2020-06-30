@@ -5,13 +5,15 @@ class ScriicException(Exception):
 class ScriicSyntaxException(ScriicException):
     """Raised when a syntax error is encountered in a Scriic file."""
 
-    pass
+    def __init__(self, file_path, message):
+        super().__init__(f"{file_path}: {message}")
 
 
 class ScriicRuntimeException(ScriicException):
     """Raised when a problem is encountered during running a Scriic file."""
 
-    pass
+    def __init__(self, file_path, message):
+        super().__init__(f"{file_path}: {message}")
 
 
 class UnsetDisplayIndexException(ScriicException):

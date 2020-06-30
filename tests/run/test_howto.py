@@ -18,7 +18,7 @@ def test_howto(tmp_path):
         "Make a ", Parameter("filling", False),
         " sandwich on ", Parameter("surface", False)
     ]
-    assert runner.required_parameters == ["filling", "surface"]
+    assert runner.required_parameters == {"filling", "surface"}
 
 
 def test_no_howto(tmp_path):
@@ -43,4 +43,4 @@ def test_quoted_param(tmp_path):
 
     runner = FileRunner(tmp_file.absolute())
     assert runner.title == ["Read ", Parameter("book_title", True)]
-    assert runner.required_parameters == ["book_title"]
+    assert runner.required_parameters == {"book_title"}
