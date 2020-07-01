@@ -1,5 +1,9 @@
-Scriic
+|logo|
 ******
+
+.. |logo| image:: scriic.png
+   :alt: Scriic
+   :height: 100px
 
 .. toctree::
    :maxdepth: 2
