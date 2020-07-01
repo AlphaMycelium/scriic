@@ -1,16 +1,18 @@
 import pytest
 
 from scriic.errors import ScriicRuntimeException
-from scriic.substitute import substitute_variables
-from scriic.parser.primitives import Substitution
 from scriic.parser.howto import Parameter
+from scriic.parser.primitives import Substitution
+from scriic.substitute import substitute_variables
 
 
 @pytest.mark.parametrize("s_type", [Substitution, Parameter])
 def test_substitution(s_type):
-    assert substitute_variables(
-        ["A", s_type("var", False), "C"], {"var": "B"}
-    ) == ["A", "B", "C"]
+    assert substitute_variables(["A", s_type("var", False), "C"], {"var": "B"}) == [
+        "A",
+        "B",
+        "C",
+    ]
 
 
 @pytest.mark.parametrize("s_type", [Substitution, Parameter])

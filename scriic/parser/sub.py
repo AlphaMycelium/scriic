@@ -1,7 +1,6 @@
 from parsy import *
 
-from scriic.parser.primitives import variable, assignment, newline, text
-
+from scriic.parser.primitives import assignment, newline, text, variable
 
 Import = namedtuple("Import", "module path")
 SubParameter = namedtuple("SubParameter", "name value")

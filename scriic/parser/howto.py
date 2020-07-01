@@ -2,7 +2,6 @@ from parsy import *
 
 from scriic.parser.primitives import variable
 
-
 Parameter = namedtuple("Parameter", "name quoted")
 
 

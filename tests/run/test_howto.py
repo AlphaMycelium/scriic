@@ -1,8 +1,8 @@
 import pytest
 
 from scriic.errors import ScriicSyntaxException
-from scriic.run import FileRunner
 from scriic.parser.howto import Parameter
+from scriic.run import FileRunner
 
 
 def test_howto(tmp_path):
@@ -15,8 +15,10 @@ def test_howto(tmp_path):
 
     runner = FileRunner(tmp_file.absolute())
     assert runner.title == [
-        "Make a ", Parameter("filling", False),
-        " sandwich on ", Parameter("surface", False)
+        "Make a ",
+        Parameter("filling", False),
+        " sandwich on ",
+        Parameter("surface", False),
     ]
     assert runner.required_parameters == {"filling", "surface"}
 

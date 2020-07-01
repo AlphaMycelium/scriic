@@ -2,7 +2,6 @@ from parsy import *
 
 from scriic.parser.primitives import text
 
-
 Return = namedtuple("Return", "value")
 
 
@@ -11,4 +10,3 @@ def return_():
     yield string("RETURN ")
     value = yield text
     return Return(value)
-

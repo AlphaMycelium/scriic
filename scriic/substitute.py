@@ -31,8 +31,7 @@ def substitute_variables(parts, variables, file_path=None):
             variable_value = variables[part.name]
         except KeyError as e:
             raise ScriicRuntimeException(
-                file_path,
-                f"Variable {part.name} does not exist"
+                file_path, f"Variable {part.name} does not exist"
             ) from e
 
         # Add quotes if necessary

@@ -6,15 +6,15 @@ from parsy import ParseError
 
 from scriic.errors import ScriicRuntimeException, ScriicSyntaxException
 from scriic.instruction import Instruction
-from scriic.substitute import substitute_variables
-from scriic.value import UnknownValue, Value
 from scriic.parser import parse
-from scriic.parser.howto import Parameter
 from scriic.parser.do import Do
-from scriic.parser.sub import Sub
+from scriic.parser.howto import Parameter
 from scriic.parser.letters import Letters
 from scriic.parser.repeat import Repeat
 from scriic.parser.return_ import Return
+from scriic.parser.sub import Sub
+from scriic.substitute import substitute_variables
+from scriic.value import UnknownValue, Value
 
 
 class FileRunner:
@@ -39,7 +39,9 @@ class FileRunner:
             except ParseError as e:
                 raise ScriicSyntaxException(self.file_path, str(e)) from e
 
-        self.required_parameters = {x.name for x in self.title if isinstance(x, Parameter)}
+        self.required_parameters = {
+            x.name for x in self.title if isinstance(x, Parameter)
+        }
 
     def run(self, parameters=None):
         """
@@ -57,7 +59,7 @@ class FileRunner:
         if len(missing_parameters) > 0:
             raise ScriicRuntimeException(
                 self.file_path,
-                "Missing one or more parameters: " + ", ".join(missing_parameters)
+                "Missing one or more parameters: " + ", ".join(missing_parameters),
             )
 
         title = substitute_variables(self.title, self.variables, self.file_path)
@@ -81,7 +83,8 @@ class FileRunner:
             self._letters(step)
         elif isinstance(step, Return):
             self.return_value = substitute_variables(
-                step.value, self.variables, self.file_path)
+                step.value, self.variables, self.file_path
+            )
         else:
             raise ScriicRuntimeException(self.file_path, f"Unrecognized step: {step}")
 
@@ -115,7 +118,9 @@ class FileRunner:
 
         # Build dictionary of parameters
         parameters = {
-            parameter.name: substitute_variables(parameter.value, self.variables, self.file_path)
+            parameter.name: substitute_variables(
+                parameter.value, self.variables, self.file_path
+            )
             for parameter in step.parameters
         }
         # Run the subscriic and add its resulting instruction
@@ -129,11 +134,13 @@ class FileRunner:
             else:
                 raise ScriicRuntimeException(
                     self.file_path,
-                    "Expecting a return value from {path}, but one was not given"
+                    "Expecting a return value from {path}, but one was not given",
                 )
 
     def _return(self, step):
-        self.return_value = substitute_variables(step.value, self.variables, self.file_path)
+        self.return_value = substitute_variables(
+            step.value, self.variables, self.file_path
+        )
 
     def _repeat(self, step):
         if isinstance(step.times, int):
@@ -152,7 +159,7 @@ class FileRunner:
                 # The value has more than the single number we are looking for
                 raise ScriicRuntimeException(
                     self.file_path,
-                    f"Cannot parse {times} as a number of times to REPEAT"
+                    f"Cannot parse {times} as a number of times to REPEAT",
                 )
 
         if times.is_unknown():
@@ -165,7 +172,7 @@ class FileRunner:
             except ValueError:
                 raise ScriicRuntimeException(
                     self.file_path,
-                    f"Cannot parse {times} as a number of times to REPEAT"
+                    f"Cannot parse {times} as a number of times to REPEAT",
                 )
             else:
                 self._repeat_known(step, times)

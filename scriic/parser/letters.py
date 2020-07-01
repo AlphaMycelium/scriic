@@ -1,7 +1,6 @@
 from parsy import *
 
-from scriic.parser.primitives import text, assignment, block
-
+from scriic.parser.primitives import assignment, block, text
 
 Letters = namedtuple("Letters", "text assign_to steps")
 
@@ -12,4 +11,3 @@ def letters():
     text_ = yield string("LETTERS ") >> text
     steps = yield block
     return Letters(text_, assign_to, steps)
-
