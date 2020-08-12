@@ -3,7 +3,7 @@
 *This file contains information specific to Scriic. You should also read these
 [general contributing guidelines][default-contributing].*
 
-[default-contributing]: https://github.com/AlphaMycelium/.github/blob/master/CONTRIBUTING.md
+[default-contributing]: https://github.com/danth/.github/blob/master/CONTRIBUTING.md
 
 
 ## Commit Messages

@@ -28,10 +28,10 @@ setup(
         "Programming Language :: Python :: 3.8",
     ],
     keywords="tutorial steps instructions script generator",
-    url="https://github.com/AlphaMycelium/scriic",
+    url="https://github.com/danth/scriic",
     project_urls={
-        "Bug Reports": "https://github.com/AlphaMycelium/scriic/issues",
-        "Source": "https://github.com/AlphaMycelium/scriic",
+        "Bug Reports": "https://github.com/danth/scriic/issues",
+        "Source": "https://github.com/danth/scriic",
     },
     packages=find_packages(exclude=["docs", "tests"]),
     package_data={"scriicsics": ["*.scriic"]},
