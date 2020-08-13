@@ -39,7 +39,7 @@ setup(
     install_requires=["fire <1", "parsy >=1.1,<2"],
     extras_require={
         "docs": ["sphinx >=2,<3"],
-        "tests": ["pytest >=5,<6", "pytest-cov >=2,<3"],
+        "tests": ["pytest >=5,<6"],
     },
     entry_points={"console_scripts": ["scriic=scriic:main"]},
 )
