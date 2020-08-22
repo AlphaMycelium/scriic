@@ -74,7 +74,7 @@ jobs:
     name: Semantic Release
     runs-on: ubuntu-latest
     needs: [test, beautify]
-    if: github.repository == 'AlphaMycelium/scriic'
+    if: github.repository == 'danth/scriic'
 
     steps:
     - uses: actions/checkout@v2
